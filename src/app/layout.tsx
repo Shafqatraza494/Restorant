@@ -1,0 +1,53 @@
+// app/layout.tsx
+import "./globals.css";
+import "./bootstrap.min.css";
+
+import Navbar from "@/Components/Navbar"; // Changed Components → components (check your folder name)
+import Footer from "@/Components/Footer";
+
+import React, { ReactNode } from "react";
+
+export const metadata = {
+  title: "Restoran Template",
+  description: "Bootstrap Restaurant Template",
+};
+
+type RootLayoutProps = {
+  children: ReactNode;
+};
+
+export default function RootLayout({ children }: RootLayoutProps) {
+  return (
+    <html lang="en">
+      <head>
+        {/* Google Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin=""
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css"
+          rel="stylesheet"
+        />
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css"
+          rel="stylesheet"
+        />
+
+        {/* Favicon */}
+        <link rel="icon" href="/img/favicon.ico" />
+      </head>
+      <body>
+        <Navbar />
+        {children}
+        <Footer />
+      </body>
+    </html>
+  );
+}
