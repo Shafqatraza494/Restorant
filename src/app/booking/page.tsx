@@ -133,7 +133,7 @@ function Page() {
       <div
         className="modal fade"
         id="videoModal"
-        tabIndex="-1"
+        tabIndex={-1}
         aria-labelledby="exampleModalLabel"
         aria-hidden="true"
       >
