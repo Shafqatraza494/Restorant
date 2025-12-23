@@ -4,48 +4,61 @@ import Link from "next/link";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
+interface User {
+  name: string;
+  email: string;
+  password: string;
+}
+
 export default function RegisterPage() {
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const router = useRouter();
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError("");
 
-    try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        alert(result.error || "Something went wrong");
-      } else {
-        alert("Registration successful");
-        router.push("/login");
-      }
-    } catch (error: any) {
-      alert("Network or server error: " + error.message);
+    if (!name || !email || !password) {
+      setError("All fields are required");
+      return;
     }
+
+    // 📦 Get users from localStorage
+    const users: User[] = JSON.parse(localStorage.getItem("users") || "[]");
+
+    // ❌ Duplicate email check
+    const exists = users.some((u) => u.email === email);
+    if (exists) {
+      setError("User with this email already exists");
+      return;
+    }
+
+    // ✅ Save new user
+    const newUser: User = { name, email, password };
+    users.push(newUser);
+    localStorage.setItem("users", JSON.stringify(users));
+
+    alert("Registration successful! Please login.");
+    router.push("/login");
   }
 
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
         <h2 className="auth-title">Register</h2>
-        <form onSubmit={handleSubmit} method="POST">
+
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
             <input
               id="name"
-              value={name}
-              onChange={(e) => setName(e.currentTarget.value)}
               type="text"
               placeholder="Your name"
+              value={name}
+              onChange={(e) => setName(e.currentTarget.value)}
               required
               autoComplete="name"
             />
@@ -55,10 +68,10 @@ export default function RegisterPage() {
             <label htmlFor="email">Email</label>
             <input
               id="email"
-              value={email}
-              onChange={(e) => setEmail(e.currentTarget.value)}
               type="email"
               placeholder="Enter email"
+              value={email}
+              onChange={(e) => setEmail(e.currentTarget.value)}
               required
               autoComplete="email"
             />
@@ -68,14 +81,16 @@ export default function RegisterPage() {
             <label htmlFor="password">Password</label>
             <input
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.currentTarget.value)}
               type="password"
               placeholder="Create password"
+              value={password}
+              onChange={(e) => setPassword(e.currentTarget.value)}
               required
               autoComplete="new-password"
             />
           </div>
+
+          {error && <p style={{ color: "red" }}>{error}</p>}
 
           <button type="submit" className="auth-btn">
             Create Account

@@ -9,34 +9,35 @@ export default function LoginPage() {
   const [password, setPassword] = useState<string>("");
   const router = useRouter();
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+    // 🔍 Get users from localStorage
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
 
-      const result = await response.json();
-      console.log(result);
+    const user = users.find(
+      (u: { email: string; password: string }) =>
+        u.email === email && u.password === password
+    );
 
-      if (!response.ok) {
-        alert(result.error || "Invalid credentials");
-      } else {
-        // Set cookie for loggedIn=true, expires in 1 day
-        document.cookie = "loggedIn=true; path=/; max-age=86400"; // 86400 seconds = 1 day
-
-        // Optional: trigger any event listeners if you have any
-        window.dispatchEvent(new Event("authChange"));
-
-        alert("Login successful");
-        router.push("/"); // redirect to home page
-      }
-    } catch (error: any) {
-      alert("Network error: " + error.message);
+    if (!user) {
+      alert("Invalid email or password");
+      return;
     }
+
+    // ✅ UI auth (Navbar)
+    localStorage.setItem("loggedInUser", email);
+
+    // ✅ Middleware auth
+    document.cookie = "loggedIn=true; path=/; max-age=86400";
+
+    // 🔔 Notify navbar instantly
+    window.dispatchEvent(new Event("authChange"));
+
+    alert("Login successful");
+
+    // Redirect
+    router.push("/");
   }
 
   return (
