@@ -1,8 +1,65 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
-function Page() {
+export default function Page() {
+  // Controlled form state
+  const [booking, setBooking] = useState({
+    name: "",
+    email: "",
+    datetime: "",
+    people: "1",
+    message: "",
+  });
+
+  // Handle input changes
+  function handleChange(
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) {
+    const { id, value } = e.target;
+    setBooking((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  }
+
+  // Submit handler
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    // Basic validation
+    if (
+      !booking.name.trim() ||
+      !booking.email.trim() ||
+      !booking.datetime.trim()
+    ) {
+      alert("Please fill in Name, Email, and Date & Time.");
+      return;
+    }
+
+    // Save booking to localStorage (or send to API)
+    const existingBookings = JSON.parse(
+      localStorage.getItem("bookings") || "[]"
+    );
+    localStorage.setItem(
+      "bookings",
+      JSON.stringify([...existingBookings, booking])
+    );
+
+    alert("Booking successful!");
+
+    // Reset form
+    setBooking({
+      name: "",
+      email: "",
+      datetime: "",
+      people: "1",
+      message: "",
+    });
+  }
+
   return (
     <div>
       {/* Navbar & Hero Start */}
@@ -53,7 +110,7 @@ function Page() {
                 Reservation
               </h5>
               <h1 className="text-white mb-4">Book A Table Online</h1>
-              <form>
+              <form onSubmit={handleSubmit}>
                 <div className="row g-3">
                   <div className="col-md-6">
                     <div className="form-floating">
@@ -62,6 +119,9 @@ function Page() {
                         className="form-control"
                         id="name"
                         placeholder="Your Name"
+                        value={booking.name}
+                        onChange={handleChange}
+                        required
                       />
                       <label htmlFor="name">Your Name</label>
                     </div>
@@ -73,35 +133,40 @@ function Page() {
                         className="form-control"
                         id="email"
                         placeholder="Your Email"
+                        value={booking.email}
+                        onChange={handleChange}
+                        required
                       />
                       <label htmlFor="email">Your Email</label>
                     </div>
                   </div>
                   <div className="col-md-6">
-                    <div
-                      className="form-floating date"
-                      id="date3"
-                      data-target-input="nearest"
-                    >
+                    <div className="form-floating">
                       <input
-                        type="text"
-                        className="form-control datetimepicker-input"
+                        type="datetime-local"
+                        className="form-control"
                         id="datetime"
                         placeholder="Date & Time"
-                        data-target="#date3"
-                        data-toggle="datetimepicker"
+                        value={booking.datetime}
+                        onChange={handleChange}
+                        required
                       />
                       <label htmlFor="datetime">Date & Time</label>
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="form-floating">
-                      <select className="form-select" id="select1">
+                      <select
+                        className="form-select"
+                        id="people"
+                        value={booking.people}
+                        onChange={handleChange}
+                      >
                         <option value="1">People 1</option>
                         <option value="2">People 2</option>
                         <option value="3">People 3</option>
                       </select>
-                      <label htmlFor="select1">No Of People</label>
+                      <label htmlFor="people">No Of People</label>
                     </div>
                   </div>
                   <div className="col-12">
@@ -111,6 +176,8 @@ function Page() {
                         placeholder="Special Request"
                         id="message"
                         style={{ height: "100px" }}
+                        value={booking.message}
+                        onChange={handleChange}
                       ></textarea>
                       <label htmlFor="message">Special Request</label>
                     </div>
@@ -150,13 +217,12 @@ function Page() {
                 aria-label="Close"
               ></button>
             </div>
+            {/* Uncomment and fix iframe if you want video embed */}
             {/* <div className="modal-body">
-              16:9 aspect ratio
               <div className="ratio ratio-16x9">
                 <iframe
                   className="embed-responsive-item"
-                  src=""
-                  id="video"
+                  src="https://www.youtube.com/embed/DWRcNpR6Kdc"
                   allowFullScreen
                   allow="autoplay"
                   title="Youtube Video"
@@ -170,5 +236,3 @@ function Page() {
     </div>
   );
 }
-
-export default Page;

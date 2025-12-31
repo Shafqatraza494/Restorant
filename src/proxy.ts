@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ✅ middleware ONLY cookie check karega
+  // Check if user is logged in via cookie
   const loggedIn = request.cookies.get("loggedIn")?.value === "true";
 
-  console.error(loggedIn);
-  
-
-  // 🔐 Protected routes (login required)
+  // Routes that require user to be logged in
   const protectedRoutes = [
     "/booking",
     "/cart",
     "/checkout",
     "/payment",
-    "/order_conformations",
+    "/order_conformations",  // verify spelling here
     "/track_order",
   ];
 
@@ -28,7 +25,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 🚫 Auth routes (login/register) — logged in user ko allow na karo
+  // Routes for login and register
   const authRoutes = ["/login", "/register"];
 
   const isAuthRoute = authRoutes.some((route) =>
@@ -42,7 +39,6 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// 🎯 Middleware matcher
 export const config = {
   matcher: [
     "/booking/:path*",

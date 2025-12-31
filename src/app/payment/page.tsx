@@ -29,27 +29,52 @@ export default function PaymentPage() {
   // JazzCash/EasyPaisa form states
   const [phoneNumber, setPhoneNumber] = useState("");
   const [pin, setPin] = useState("");
-  const [amount, setAmount] = useState("0");
+  const [amount, setAmount] = useState("0.00");
 
   useEffect(() => {
     const currentOrder = localStorage.getItem("currentOrder");
     if (currentOrder) {
-      const { orderNumber, cartItems } = JSON.parse(currentOrder);
-      setOrderNumber(orderNumber);
-      setCartItems(cartItems);
+      try {
+        const parsed = JSON.parse(currentOrder);
+
+        if (Array.isArray(parsed.cartItems)) {
+          const sanitizedCartItems = parsed.cartItems.map((item: any) => ({
+            ...item,
+            price: Number(item.price) || 0,
+            quantity: Number(item.quantity) || 0,
+          }));
+
+          setCartItems(sanitizedCartItems);
+        } else {
+          setCartItems([]);
+        }
+
+        setOrderNumber(parsed.orderNumber || "");
+      } catch (error) {
+        console.error("Failed to parse currentOrder:", error);
+        setCartItems([]);
+        setOrderNumber("");
+      }
+    } else {
+      setCartItems([]);
+      setOrderNumber("");
     }
   }, []);
 
+  // Calculate totals safely
   const totalPrice = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
 
-  const taxRate = 0.1; // 10% tax example
-  const discount = 5; // fixed $5 discount example
-  const taxAmount = totalPrice * taxRate;
-  const finalTotal = totalPrice + taxAmount - discount;
+  const taxRate = 0.1; // 10% tax
+  const discount = 5; // $5 discount fixed
 
+  const taxAmount = totalPrice * taxRate;
+  // Prevent final total from being negative
+  const finalTotal = Math.max(totalPrice + taxAmount - discount, 0);
+
+  // Update amount string for JazzCash/EasyPaisa form
   useEffect(() => {
     setAmount(finalTotal.toFixed(2));
   }, [finalTotal]);
@@ -65,29 +90,15 @@ export default function PaymentPage() {
     setPaymentMethod("");
   };
 
-  const validateCardNumber = (num: string) => {
-    return /^\d{16}$/.test(num.replace(/\s+/g, ""));
-  };
-
-  const validateExpiry = (exp: string) => {
-    return /^(0[1-9]|1[0-2])\/\d{2}$/.test(exp);
-  };
-
-  const validateCvv = (cvv: string) => {
-    return /^\d{3}$/.test(cvv);
-  };
-
-  const validatePhone = (phone: string) => {
-    return /^03\d{9}$/.test(phone);
-  };
-
-  const validatePin = (pin: string) => {
-    return /^\d{4,6}$/.test(pin); // 4 to 6 digits PIN
-  };
-
-  const validateAmount = (amt: string) => {
-    return /^\d+(\.\d{1,2})?$/.test(amt) && parseFloat(amt) > 0;
-  };
+  // Validation helpers (same as your original)
+  const validateCardNumber = (num: string) =>
+    /^\d{16}$/.test(num.replace(/\s+/g, ""));
+  const validateExpiry = (exp: string) => /^(0[1-9]|1[0-2])\/\d{2}$/.test(exp);
+  const validateCvv = (cvv: string) => /^\d{3}$/.test(cvv);
+  const validatePhone = (phone: string) => /^03\d{9}$/.test(phone);
+  const validatePin = (pin: string) => /^\d{4,6}$/.test(pin);
+  const validateAmount = (amt: string) =>
+    /^\d+(\.\d{1,2})?$/.test(amt) && parseFloat(amt) > 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,15 +138,12 @@ export default function PaymentPage() {
       setIsProcessing(false);
       setMessage("Payment Successful! Your order is confirmed.");
 
-      // Clear cart and current order from localStorage
       localStorage.removeItem("cart");
       localStorage.removeItem("currentOrder");
-
-      // Dispatch event to notify other components (e.g., Navbar) about cart update
       window.dispatchEvent(new Event("cartUpdate"));
 
       resetForm();
-      setCartItems([]); // Clear local cart state too
+      setCartItems([]);
       setOrderNumber("");
       router.push("/");
     }, 2000);
@@ -380,7 +388,6 @@ export default function PaymentPage() {
                     value={amount}
                     required
                     onChange={(e) => {
-                      // Allow numbers and decimal
                       const val = e.target.value;
                       if (/^\d*\.?\d{0,2}$/.test(val)) {
                         setAmount(val);
