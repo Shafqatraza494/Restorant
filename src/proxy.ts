@@ -6,6 +6,7 @@ export function proxy(request: NextRequest) {
 
   // Check if user is logged in via cookie
   const loggedIn = request.cookies.get("loggedIn")?.value === "true";
+  
 
   // Routes that require user to be logged in
   const protectedRoutes = [
@@ -14,7 +15,6 @@ export function proxy(request: NextRequest) {
     "/checkout",
     "/payment",
     "/order_conformations",  // verify spelling here
-    "/track_order",
   ];
 
   const isProtected = protectedRoutes.some((route) =>
@@ -46,7 +46,6 @@ export const config = {
     "/checkout/:path*",
     "/payment/:path*",
     "/order_conformations/:path*",
-    "/track_order/:path*",
     "/login",
     "/register",
   ],

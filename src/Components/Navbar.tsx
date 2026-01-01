@@ -68,6 +68,7 @@ function Navbar() {
     window.dispatchEvent(new Event("authChange"));
 
     router.push("/login");
+    
   }
 
   return (
@@ -157,10 +158,6 @@ function Navbar() {
               </span>
             )}
           </Link>
-
-          {/* <Link href="/track_order" className="nav-item nav-link">
-            Track Order
-          </Link> */}
         </div>
 
         {/* ✅ CONDITIONAL BUTTON */}

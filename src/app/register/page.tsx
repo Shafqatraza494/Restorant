@@ -41,6 +41,12 @@ export default function RegisterPage() {
     users.push(newUser);
     localStorage.setItem("users", JSON.stringify(users));
 
+    localStorage.setItem("loggedInUser", email);
+
+    // ✅ Middleware auth
+    document.cookie = "loggedIn=true; path=/; max-age=86400";
+    window.dispatchEvent(new Event("authChange"));
+
     alert("Registration successful! Please login.");
     router.push("/login");
   }
