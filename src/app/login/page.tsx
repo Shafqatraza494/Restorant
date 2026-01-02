@@ -7,36 +7,38 @@ import { useRouter } from "next/navigation";
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
   const router = useRouter();
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError("");
 
-    try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
+    // 🔍 Get users from localStorage
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
 
-      const user = users.find(
-        (u: { email: string; password: string }) =>
-          u.email === email && u.password === password
-      );
+    const user = users.find(
+      (u: { email: string; password: string }) =>
+        u.email === email && u.password === password
+    );
 
-      if (!user) {
-        setError("Invalid email or password.");
-        return;
-      }
-
-      localStorage.setItem("loggedInUser", email);
-      document.cookie = "loggedIn=true; path=/; max-age=86400; SameSite=Lax";
-
-      window.dispatchEvent(new Event("authChange"));
-
-      alert("Login successful.");
-      router.push("/");
-    } catch {
-      setError("An error occurred. Please try again.");
+    if (!user) {
+      alert("Invalid email or password");
+      return;
     }
+
+    // ✅ UI auth (Navbar)
+    localStorage.setItem("loggedInUser", email);
+
+    // ✅ Middleware auth
+    document.cookie =
+      "loggedIn=true; path=/; max-age=86400; SameSite=None; Secure";
+
+    // 🔔 Notify navbar instantly
+    window.dispatchEvent(new Event("authChange"));
+
+    alert("Login successful");
+
+    // Redirect
+    router.push("/");
   }
 
   return (
@@ -70,8 +72,6 @@ export default function LoginPage() {
               autoComplete="current-password"
             />
           </div>
-
-          {error && <p style={{ color: "red" }}>{error}</p>}
 
           <button type="submit" className="auth-btn">
             Login

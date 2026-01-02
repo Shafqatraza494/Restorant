@@ -17,50 +17,38 @@ export default function RegisterPage() {
   const [error, setError] = useState<string>("");
   const router = useRouter();
 
-  function isValidEmail(email: string) {
-    return /\S+@\S+\.\S+/.test(email);
-  }
-
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
     if (!name || !email || !password) {
-      setError("All fields are required.");
+      setError("All fields are required");
       return;
     }
 
-    if (!isValidEmail(email)) {
-      setError("Please enter a valid email.");
+    // 📦 Get users from localStorage
+    const users: User[] = JSON.parse(localStorage.getItem("users") || "[]");
+
+    // ❌ Duplicate email check
+    const exists = users.some((u) => u.email === email);
+    if (exists) {
+      setError("User with this email already exists");
       return;
     }
 
-    try {
-      const users: User[] = JSON.parse(localStorage.getItem("users") || "[]");
+    // ✅ Save new user
+    const newUser: User = { name, email, password };
+    users.push(newUser);
+    localStorage.setItem("users", JSON.stringify(users));
 
-      const exists = users.some((u) => u.email === email);
-      if (exists) {
-        setError("User with this email already exists.");
-        return;
-      }
+    localStorage.setItem("loggedInUser", email);
 
-      const newUser: User = { name, email, password };
-      users.push(newUser);
-      localStorage.setItem("users", JSON.stringify(users));
+    // ✅ Middleware auth
+    document.cookie = "loggedIn=true; path=/; max-age=86400";
+    window.dispatchEvent(new Event("authChange"));
 
-      // Set auth cookie and loggedInUser localStorage
-      localStorage.setItem("loggedInUser", email);
-      document.cookie = "loggedIn=true; path=/; max-age=86400; SameSite=Lax";
-
-      window.dispatchEvent(new Event("authChange"));
-
-      alert("Registration successful! You are now logged in.");
-
-      // Redirect to home or dashboard
-      router.push("/");
-    } catch {
-      setError("Something went wrong. Please try again.");
-    }
+    alert("Registration successful! Please login.");
+    router.push("/login");
   }
 
   return (
