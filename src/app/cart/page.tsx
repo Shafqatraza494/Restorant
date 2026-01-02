@@ -17,7 +17,11 @@ export default function CartPage() {
   useEffect(() => {
     const savedCart = localStorage.getItem("cart");
     if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
+      try {
+        setCartItems(JSON.parse(savedCart));
+      } catch {
+        setCartItems([]);
+      }
     }
   }, []);
 
@@ -81,6 +85,7 @@ export default function CartPage() {
                     <button
                       onClick={() => handleRemove(id)}
                       className="text-red-600 hover:text-red-800"
+                      aria-label={`Remove ${name} from cart`}
                     >
                       Remove
                     </button>

@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import path from "path";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if user is logged in via cookie
   const loggedIn = request.cookies.get("loggedIn")?.value === "true";
-  
 
+  console.log(pathname);
+  console.log(loggedIn);
+  
   // Routes that require user to be logged in
   const protectedRoutes = [
     "/booking",
@@ -21,7 +24,7 @@ export function proxy(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  if (isProtected && !loggedIn) {
+  if (isProtected  && !loggedIn) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

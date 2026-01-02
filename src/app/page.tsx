@@ -1,5 +1,6 @@
 "use client";
 
+import { log } from "console";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
