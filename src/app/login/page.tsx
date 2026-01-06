@@ -35,9 +35,11 @@ export default function LoginPage() {
     // 🔔 Notify navbar instantly
     window.dispatchEvent(new Event("authChange"));
 
-    alert("Login successful");
+    // alert("Login successful");
 
     // Redirect
+    // router.refresh();
+    window.location.reload();
     router.push("/");
   }
 

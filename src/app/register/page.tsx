@@ -37,6 +37,7 @@ export default function RegisterPage() {
     }
 
     // ✅ Save new user
+
     const newUser: User = { name, email, password };
     users.push(newUser);
     localStorage.setItem("users", JSON.stringify(users));

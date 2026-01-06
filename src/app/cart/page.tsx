@@ -1,113 +1,96 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-type CartItem = {
+interface CartItem {
   id: number;
   name: string;
   price: number;
   quantity: number;
   image?: string;
-};
+}
 
-export default function CartPage() {
+export default function OrderConfirmationPage() {
+  const [orderNumber, setOrderNumber] = useState<string>("");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const router = useRouter();
 
-  // Load cart items from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      try {
-        setCartItems(JSON.parse(savedCart));
-      } catch {
-        setCartItems([]);
-      }
+    const randomOrder = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+    setOrderNumber(randomOrder);
+
+    const cart = localStorage.getItem("cart");
+    if (cart) {
+      setCartItems(JSON.parse(cart));
     }
   }, []);
-
-  // Update localStorage whenever cart changes
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cartItems));
-  }, [cartItems]);
-
-  const handleQuantityChange = (id: number, quantity: number) => {
-    if (quantity < 1) return; // prevent zero or negative quantities
-    setCartItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
-    );
-  };
-
-  const handleRemove = (id: number) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
-  };
 
   const totalPrice = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
 
+  const handleCancel = () => {
+    router.push("/");
+  };
+
+  const handleConfirm = () => {
+    // Save current cart + order number to localStorage so payment page can read
+    localStorage.setItem(
+      "currentOrder",
+      JSON.stringify({ orderNumber, cartItems })
+    );
+    router.push("/payment");
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-semibold mb-6">Your Cart</h1>
+    <div className="container py-5">
+      <h1 className="mb-4 text-center">Thank you for your order!</h1>
+      <p className="text-center mb-5">
+        Your order number is <strong>{orderNumber}</strong>
+      </p>
 
+      <h3>Order Summary:</h3>
       {cartItems.length === 0 ? (
-        <p>Your cart is empty.</p>
+        <p>Your cart was empty.</p>
       ) : (
-        <>
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b">
-                <th className="py-2">Item</th>
-                <th className="py-2">Price</th>
-                <th className="py-2">Quantity</th>
-                <th className="py-2">Total</th>
-                <th className="py-2">Action</th>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cartItems.map(({ id, name, price, quantity }) => (
+              <tr key={id}>
+                <td>{name}</td>
+                <td>{quantity}</td>
+                <td>${price.toFixed(2)}</td>
+                <td>${(price * quantity).toFixed(2)}</td>
               </tr>
-            </thead>
-            <tbody>
-              {cartItems.map(({ id, name, price, quantity }) => (
-                <tr key={id} className="border-b">
-                  <td className="py-2">{name}</td>
-                  <td className="py-2">${price.toFixed(2)}</td>
-                  <td className="py-2">
-                    <input
-                      type="number"
-                      min={1}
-                      value={quantity}
-                      onChange={(e) =>
-                        handleQuantityChange(id, Number(e.target.value))
-                      }
-                      className="w-16 border rounded px-2 py-1"
-                    />
-                  </td>
-                  <td className="py-2">${(price * quantity).toFixed(2)}</td>
-                  <td className="py-2">
-                    <button
-                      onClick={() => handleRemove(id)}
-                      className="text-red-600 hover:text-red-800"
-                      aria-label={`Remove ${name} from cart`}
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="mt-6 text-right">
-            <p className="text-xl font-semibold">
-              Total: ${totalPrice.toFixed(2)}
-            </p>
-            <button
-              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              onClick={() => alert("Proceed to checkout")}
-            >
-              Checkout
-            </button>
-          </div>
-        </>
+            ))}
+            <tr>
+              <td colSpan={3} className="text-end fw-bold">
+                Total:
+              </td>
+              <td className="fw-bold">${totalPrice.toFixed(2)}</td>
+            </tr>
+          </tbody>
+        </table>
       )}
+
+      <div className="d-flex justify-content-center gap-3 mt-4">
+        <button onClick={handleCancel} className="btn btn-secondary px-4">
+          Cancel
+        </button>
+        <button onClick={handleConfirm} className="btn btn-primary px-4">
+          Confirm
+        </button>
+      </div>
     </div>
   );
 }

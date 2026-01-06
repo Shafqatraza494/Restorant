@@ -160,7 +160,7 @@ function Navbar() {
 
           {/* CART */}
           <Link
-            href="/order_conformations"
+            href="/cart"
             className="nav-item nav-link position-relative"
             onClick={() => setCollapse(false)}
           >
