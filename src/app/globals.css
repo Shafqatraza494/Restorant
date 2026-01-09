@@ -312,7 +312,7 @@ input:focus {
   height: 100%;
   min-height: 500px;
   background: linear-gradient(rgba(15, 23, 43, 0.1), rgba(15, 23, 43, 0.1)),
-    url(/video.jpg);
+    url(https://www.youtube.com/watch?v=rCBwnS8_xBo);
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;

@@ -49,7 +49,9 @@ export default function RegisterPage() {
     window.dispatchEvent(new Event("authChange"));
 
     alert("Registration successful! Please login.");
+    window.location.reload();
     router.push("/login");
+    
   }
 
   return (
