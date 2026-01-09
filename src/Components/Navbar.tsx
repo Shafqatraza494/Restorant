@@ -57,6 +57,7 @@ function Navbar() {
     localStorage.removeItem("loggedInUser");
     document.cookie = "loggedIn=; path=/; max-age=0";
     window.dispatchEvent(new Event("authChange"));
+    window.location.reload();
     router.push("/login");
     setCollapse(false);
   }
