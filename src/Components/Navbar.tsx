@@ -99,7 +99,7 @@ function Navbar() {
           </Link>
 
           <Link
-            href="/services"
+            href="/service"
             className="nav-item nav-link"
             onClick={() => setCollapse(false)}
           >
