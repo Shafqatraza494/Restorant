@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { toast } from "sonner";
 
 export default function Page() {
   // Controlled form state
@@ -48,7 +49,7 @@ export default function Page() {
       JSON.stringify([...existingBookings, booking])
     );
 
-    alert("Booking successful!");
+    toast.success("Booking successful!");
 
     // Reset form
     setBooking({

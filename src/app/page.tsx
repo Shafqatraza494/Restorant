@@ -4,6 +4,7 @@ import { log } from "console";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 import useFetch from "src/hooks/useFetch";
 
 type CartItem = {
@@ -41,7 +42,7 @@ export default function Home() {
     const isReserved = Math.random() < 0.4;
 
     if (isReserved) {
-      alert("❌ Sorry! Table Already Reserved");
+      toast.error("❌ Sorry! Table Already Reserved");
       return;
     }
 
@@ -49,7 +50,7 @@ export default function Home() {
 
     localStorage.setItem("bookings", JSON.stringify([...oldBookings, booking]));
 
-    alert("✅ Booking Successful!");
+    toast.success("✅ Booking Successful!");
 
     setBooking({
       name: "",
@@ -137,7 +138,7 @@ export default function Home() {
     // Dispatch event so Navbar and other components know cart updated
     window.dispatchEvent(new Event("cartUpdate"));
 
-    alert("Added to cart!");
+    toast.success("Added to cart!");
   }
 
   return (

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 function Navbar() {
   const [pagesOpen, setPagesOpen] = useState(false);
@@ -57,8 +58,11 @@ function Navbar() {
     localStorage.removeItem("loggedInUser");
     document.cookie = "loggedIn=; path=/; max-age=0";
     window.dispatchEvent(new Event("authChange"));
-    window.location.reload();
-    router.push("/login");
+    toast.success("Loging Out....");
+    setTimeout(() => {
+      window.location.reload();
+      router.push("/login");
+    }, 1200);
     setCollapse(false);
   }
 

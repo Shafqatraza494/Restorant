@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import React from "react";
+import { toast } from "sonner";
 
 type CartItem = {
   id: number;
@@ -29,7 +30,7 @@ function addToCart(item: CartItem) {
   // Dispatch event so Navbar and other components know cart updated
   window.dispatchEvent(new Event("cartUpdate"));
 
-  alert("Added to cart!");
+  toast.success("Added to cart!");
 }
 
 function Page() {

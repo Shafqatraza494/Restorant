@@ -46,15 +46,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body>
         <Navbar />
-        <Toaster
-          richColors
-          position="bottom-right"
-          style={{
-            marginBottom: "50px",
-            marginRight: "50px",
-            zIndex: 9999,
-          }}
-        />
+        <Toaster richColors position="top-center" />
 
         {children}
         <Footer />
