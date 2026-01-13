@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface User {
   name: string;
@@ -32,7 +33,9 @@ export default function RegisterPage() {
     // ❌ Duplicate email check
     const exists = users.some((u) => u.email === email);
     if (exists) {
-      setError("User with this email already exists");
+      toast.error("User with this email already exists", {
+        description: "Please try logging in instead.",
+      });
       return;
     }
 
@@ -48,10 +51,12 @@ export default function RegisterPage() {
     document.cookie = "loggedIn=true; path=/; max-age=86400";
     window.dispatchEvent(new Event("authChange"));
 
-    alert("Registration successful! Please login.");
-    window.location.reload();
-    router.push("/login");
-    
+    toast.success("Registration successful! Please login.");
+
+    setTimeout(() => {
+      window.location.reload();
+      router.push("/login");
+    }, 1200);
   }
 
   return (

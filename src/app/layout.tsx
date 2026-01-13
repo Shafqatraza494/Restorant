@@ -6,6 +6,7 @@ import Navbar from "@/Components/Navbar"; // Changed Components → components (
 import Footer from "@/Components/Footer";
 
 import React, { ReactNode } from "react";
+import { Toaster } from "@/Components/components/ui/sonner";
 
 export const metadata = {
   title: "Restoran Template",
@@ -45,6 +46,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body>
         <Navbar />
+        <Toaster
+          richColors
+          position="bottom-right"
+          style={{
+            marginBottom: "50px",
+            marginRight: "50px",
+            zIndex: 9999,
+          }}
+        />
+
         {children}
         <Footer />
       </body>

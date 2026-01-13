@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
@@ -21,7 +22,7 @@ export default function LoginPage() {
     );
 
     if (!user) {
-      alert("Invalid email or password");
+      toast.error("Invalid email or password");
       return;
     }
 
@@ -39,8 +40,11 @@ export default function LoginPage() {
 
     // Redirect
     // router.refresh();
-    window.location.reload();
-    router.push("/");
+    toast.success(" Login Successful");
+    setTimeout(() => {
+      window.location.reload();
+      router.push("/");
+    }, 1200);
   }
 
   return (

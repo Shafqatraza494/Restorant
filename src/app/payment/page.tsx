@@ -176,33 +176,33 @@ export default function PaymentPage() {
                   <tr key={id}>
                     <td>{name}</td>
                     <td>{quantity}</td>
-                    <td>${price.toFixed(2)}</td>
-                    <td>${(price * quantity).toFixed(2)}</td>
+                    <td>Rs: {price.toFixed(2)}</td>
+                    <td>Rs: {(price * quantity).toFixed(2)}</td>
                   </tr>
                 ))}
                 <tr>
                   <td colSpan={3} className="text-end fw-bold">
                     Subtotal:
                   </td>
-                  <td>${totalPrice.toFixed(2)}</td>
+                  <td>Rs: {totalPrice.toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td colSpan={3} className="text-end fw-bold">
                     Tax (10%):
                   </td>
-                  <td>${taxAmount.toFixed(2)}</td>
+                  <td>Rs: {taxAmount.toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td colSpan={3} className="text-end fw-bold">
                     Discount:
                   </td>
-                  <td>-${discount.toFixed(2)}</td>
+                  <td>-Rs: {discount.toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td colSpan={3} className="text-end fw-bold fs-5">
                     Total:
                   </td>
-                  <td className="fs-5 fw-bold">${finalTotal.toFixed(2)}</td>
+                  <td className="fs-5 fw-bold">Rs: {finalTotal.toFixed(2)}</td>
                 </tr>
               </tbody>
             </table>
