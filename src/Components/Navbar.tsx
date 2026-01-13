@@ -71,7 +71,7 @@ function Navbar() {
       {/* LOGO */}
       <Link href="/" className="navbar-brand p-0">
         <h1 className="text-primary m-0">
-          <i className="fa fa-utensils me-3"></i>Restorant
+          <i className="fa fa-utensils me-3"></i>Tahzeeb Kitchen
         </h1>
       </Link>
 

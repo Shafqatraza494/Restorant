@@ -32,6 +32,8 @@ export default function OrderConfirmationPage() {
   );
 
   const handleCancel = () => {
+    localStorage.removeItem("cart");
+    window.dispatchEvent(new Event("cartUpdate"));
     router.push("/");
   };
 
@@ -69,15 +71,15 @@ export default function OrderConfirmationPage() {
               <tr key={id}>
                 <td>{name}</td>
                 <td>{quantity}</td>
-                <td>${price.toFixed(2)}</td>
-                <td>${(price * quantity).toFixed(2)}</td>
+                <td>Rs: {price.toFixed(2)}</td>
+                <td>Rs: {(price * quantity).toFixed(2)}</td>
               </tr>
             ))}
             <tr>
               <td colSpan={3} className="text-end fw-bold">
                 Total:
               </td>
-              <td className="fw-bold">${totalPrice.toFixed(2)}</td>
+              <td className="fw-bold">Rs: {totalPrice.toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
