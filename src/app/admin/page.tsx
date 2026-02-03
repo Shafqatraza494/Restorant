@@ -30,9 +30,16 @@ type CardProps = {
   title: string;
   count: number | string;
   icon: React.ReactNode;
+};
+type Order = {
   subtotal: number;
-  acc: number;
-  item: object;
+};
+
+type Stats = {
+  menuItems: number;
+  orders: number;
+  users: number;
+  sales: string;
 };
 
 function AdminCard({ href, title, count, icon }: CardProps) {
@@ -57,12 +64,12 @@ function AdminCard({ href, title, count, icon }: CardProps) {
 }
 
 export default function AdminHome() {
-  const [menu, setMenu] = useState();
-  const [order, setOrder] = useState();
-  console.log(order);
-  const [user, setUser] = useState();
-  const [totalSales, setTotalSales] = useState<number>();
-  const [allOrders, setAllOrders] = useState<CardProps[]>([]);
+  const [menu, setMenu] = useState<number>(0);
+  const [order, setOrder] = useState<number>(0);
+  const [user, setUser] = useState<number>(0);
+  const [totalSales, setTotalSales] = useState<number>(0);
+
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
   async function orderStatus() {
     try {
       const res = await fetch("http://localhost:3000/api/orders");
@@ -111,7 +118,7 @@ export default function AdminHome() {
     usersfunction();
   }, []);
   // Replace these with real data from your backend or API later
-  const stats = {
+  const stats: Stats = {
     menuItems: menu,
     orders: order,
     users: user,

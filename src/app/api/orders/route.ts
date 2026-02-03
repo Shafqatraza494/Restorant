@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import mysql from "mysql2/promise";
+import mysql, { ResultSetHeader } from "mysql2/promise";
 
 interface UserRequestBody {
   item: string;
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       `;
       const sql2 = "INSERT INTO status (order_id, status) VALUES (?, ?)";
 
-      let order = await connection.execute(sql, [
+      const [result] = await connection.execute<ResultSetHeader>(sql, [
         item,
         quantity,
         price,
@@ -47,7 +47,9 @@ export async function POST(request: NextRequest) {
         discount,
       ]);
 
-      await connection.execute(sql2, [order[0].insertId, status]);
+      const orderId = result.insertId;
+
+      await connection.execute(sql2, [orderId, status]);
     }
 
     await connection.end();

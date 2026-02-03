@@ -13,6 +13,7 @@ type CartItem = {
   price: number;
   quantity: number;
   image: string;
+  category: string;
 };
 
 export default function Home() {
@@ -121,27 +122,6 @@ export default function Home() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  function addToCart(item: CartItem) {
-    let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-
-    const existingIndex = cart.findIndex(
-      (cartItem: CartItem) => cartItem.id === item.id,
-    );
-
-    if (existingIndex > -1) {
-      cart[existingIndex].quantity += item.quantity;
-    } else {
-      cart.push(item);
-    }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-
-    // Dispatch event so Navbar and other components know cart updated
-    window.dispatchEvent(new Event("cartUpdate"));
-
-    toast.success("Added to cart!");
-  }
 
   return (
     <div>

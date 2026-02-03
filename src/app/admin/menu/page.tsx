@@ -163,7 +163,7 @@ export default function MenuPage() {
 }
 
 const cellStyle = { border: "1px solid #ccc", padding: "10px" };
-const overlayStyle = {
+const overlayStyle: React.CSSProperties = {
   position: "fixed",
   top: 0,
   left: 0,
