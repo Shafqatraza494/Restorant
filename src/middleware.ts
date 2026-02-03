@@ -1,42 +1,44 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import path from "path";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if user is logged in via cookie
   const loggedIn = request.cookies.get("loggedIn")?.value === "true";
+  const role = request.cookies.get("role")?.value?.toLowerCase();
 
-  console.log(pathname);
-  console.log(loggedIn);
-  
-  // Routes that require user to be logged in
+  // AUTH ROUTES HANDLING
+  if ((pathname === "/login" || pathname === "/register") && loggedIn) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // ADMIN ROUTE PROTECTION
+  if (pathname.startsWith("/admin")) {
+    if (!loggedIn) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    if (role !== "admin") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    return NextResponse.next();
+  }
+
+  // NORMAL USER PROTECTION
   const protectedRoutes = [
     "/booking",
     "/cart",
     "/checkout",
     "/payment",
-    "/order_conformations",  // verify spelling here
+    "/order_conformations",
   ];
 
-  const isProtected = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  if (isProtected  && !loggedIn) {
+  if (
+    protectedRoutes.some((route) => pathname.startsWith(route)) &&
+    !loggedIn
+  ) {
     return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // Routes for login and register
-  const authRoutes = ["/login", "/register"];
-
-  const isAuthRoute = authRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  if (isAuthRoute && loggedIn) {
-    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
@@ -51,5 +53,6 @@ export const config = {
     "/order_conformations/:path*",
     "/login",
     "/register",
+    "/admin/:path*",
   ],
 };

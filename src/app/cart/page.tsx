@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface CartItem {
   id: number;
@@ -9,39 +10,66 @@ interface CartItem {
   price: number;
   quantity: number;
   image?: string;
+  item: string;
 }
 
 export default function OrderConfirmationPage() {
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  console.log("mm", cartItems);
+
   const router = useRouter();
-
-  useEffect(() => {
-    const randomOrder = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderNumber(randomOrder);
-
-    const cart = localStorage.getItem("cart");
-    if (cart) {
-      setCartItems(JSON.parse(cart));
-    }
-  }, []);
 
   const totalPrice = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
-    0
+    0,
   );
 
-  const handleCancel = () => {
-    localStorage.removeItem("cart");
-    window.dispatchEvent(new Event("cartUpdate"));
-    router.push("/");
+  async function fetchData() {
+    try {
+      const resp = await fetch("http://localhost:3000/api/cart");
+      const result: any = await resp.json();
+      setCartItems(result);
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleCancel = async () => {
+    let localData = localStorage.getItem("loggedInUser");
+    let userId = null;
+    if (localData) {
+      userId = JSON.parse(localData);
+    }
+
+    try {
+      let resp = await fetch("http://localhost:3000/api/cart", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ deleteId: userId.id }),
+      });
+      const data = await resp.json();
+      if (resp.ok) {
+        toast.success(data.message);
+        window.dispatchEvent(new Event("cartUpdate"));
+        router.push("/");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "nothing done with that thing you passed");
+    }
   };
 
   const handleConfirm = () => {
     // Save current cart + order number to localStorage so payment page can read
     localStorage.setItem(
       "currentOrder",
-      JSON.stringify({ orderNumber, cartItems })
+      JSON.stringify({ orderNumber, cartItems }),
     );
     router.push("/payment");
   };
@@ -67,9 +95,9 @@ export default function OrderConfirmationPage() {
             </tr>
           </thead>
           <tbody>
-            {cartItems.map(({ id, name, price, quantity }) => (
+            {cartItems.map(({ id, item, price, quantity }) => (
               <tr key={id}>
-                <td>{name}</td>
+                <td>{item}</td>
                 <td>{quantity}</td>
                 <td>Rs: {price.toFixed(2)}</td>
                 <td>Rs: {(price * quantity).toFixed(2)}</td>

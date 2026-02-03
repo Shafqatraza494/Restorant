@@ -2,12 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface CartItem {
   id: number;
   name: string;
   price: number;
   quantity: number;
+  item: string;
 }
 
 export default function PaymentPage() {
@@ -15,6 +17,8 @@ export default function PaymentPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState("");
+
+  // const [discount, setDiscount] = useState<number>();
   const router = useRouter();
 
   useEffect(() => {
@@ -46,7 +50,7 @@ export default function PaymentPage() {
 
   const totalPrice = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
-    0
+    0,
   );
 
   const taxRate = 0.1;
@@ -55,9 +59,25 @@ export default function PaymentPage() {
   const taxAmount = totalPrice * taxRate;
   const finalTotal = Math.max(totalPrice + taxAmount - discount, 0);
 
-  const handleCOD = () => {
-    setIsProcessing(true);
-    setMessage("");
+  const handleCOD = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "Application/json",
+        },
+        body: JSON.stringify(cartItems),
+      });
+      console.log(response);
+      if (response.ok) {
+        toast.success("saved success");
+        emptyCart();
+      } else {
+        toast.error("error in backend");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    }
 
     setTimeout(() => {
       setIsProcessing(false);
@@ -69,9 +89,34 @@ export default function PaymentPage() {
 
       setCartItems([]);
       setOrderNumber("");
-      router.push("/");
+      // router.push("/");
     }, 2000);
   };
+  async function emptyCart() {
+    let localData = localStorage.getItem("loggedInUser");
+    let userId = null;
+    if (localData) {
+      userId = JSON.parse(localData);
+    }
+
+    try {
+      let resp = await fetch("http://localhost:3000/api/cart", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ deleteId: userId.id }),
+      });
+      const data = await resp.json();
+      if (resp.ok) {
+        toast.success(data.message);
+        window.dispatchEvent(new Event("cartUpdate"));
+        router.push("/");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "nothing done with that thing you passed");
+    }
+  }
 
   return (
     <div className="container py-5">
@@ -96,9 +141,9 @@ export default function PaymentPage() {
                 </tr>
               </thead>
               <tbody>
-                {cartItems.map(({ id, name, price, quantity }) => (
+                {cartItems.map(({ id, item, price, quantity }) => (
                   <tr key={id}>
-                    <td>{name}</td>
+                    <td>{item}</td>
                     <td>{quantity}</td>
                     <td>Rs: {price.toFixed(2)}</td>
                     <td>Rs: {(price * quantity).toFixed(2)}</td>

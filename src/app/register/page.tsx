@@ -18,7 +18,7 @@ export default function RegisterPage() {
   const [error, setError] = useState<string>("");
   const router = useRouter();
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
@@ -27,36 +27,31 @@ export default function RegisterPage() {
       return;
     }
 
-    // 📦 Get users from localStorage
-    const users: User[] = JSON.parse(localStorage.getItem("users") || "[]");
-
-    // ❌ Duplicate email check
-    const exists = users.some((u) => u.email === email);
-    if (exists) {
-      toast.error("User with this email already exists", {
-        description: "Please try logging in instead.",
+    try {
+      const response = await fetch("http://localhost:3000/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
       });
-      return;
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Something went wrong");
+        toast.error(data.error || "Registration failed");
+        return;
+      }
+
+      toast.success("Registration successful! Please login.");
+      setTimeout(() => {
+        router.push("/login");
+      }, 1200);
+    } catch (err: any) {
+      setError(err.message || "Failed to register");
+      toast.error(err.message || "Failed to register");
     }
-
-    // ✅ Save new user
-
-    const newUser: User = { name, email, password };
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
-
-    localStorage.setItem("loggedInUser", email);
-
-    // ✅ Middleware auth
-    document.cookie = "loggedIn=true; path=/; max-age=86400";
-    window.dispatchEvent(new Event("authChange"));
-
-    toast.success("Registration successful! Please login.");
-
-    setTimeout(() => {
-      window.location.reload();
-      router.push("/login");
-    }, 1200);
   }
 
   return (

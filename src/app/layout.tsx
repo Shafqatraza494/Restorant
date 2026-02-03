@@ -1,4 +1,3 @@
-// app/layout.tsx
 import "./globals.css";
 import "./bootstrap.min.css";
 
@@ -46,7 +45,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body>
         <Navbar />
-        <Toaster richColors position="top-center" />
+        <Toaster richColors position="top-right" />
 
         {children}
         <Footer />

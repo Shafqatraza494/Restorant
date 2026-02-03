@@ -42,7 +42,7 @@ function Navbar() {
     const items = JSON.parse(cart);
     const total = items.reduce(
       (sum: number, item: { quantity: number }) => sum + item.quantity,
-      0
+      0,
     );
     setCartCount(total);
   };
@@ -70,8 +70,12 @@ function Navbar() {
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-4 px-lg-5 py-3">
       {/* LOGO */}
       <Link href="/" className="navbar-brand p-0">
-        <h1 className="text-primary m-0">
-          <i className="fa fa-utensils me-3"></i>Tahzeeb Kitchen
+        <h1 style={{ fontSize: "20px" }} className="text-primary m-0">
+          <i
+            style={{ fontSize: "20px", marginLeft: "-25px" }}
+            className="fa fa-utensils me-3"
+          ></i>
+          Tahzeeb Kitchen
         </h1>
       </Link>
 

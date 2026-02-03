@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { log } from "console";
 
 type CartItem = {
   id: number;
@@ -14,6 +16,7 @@ export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cod"); // cod = cash on delivery
+
   const router = useRouter();
 
   useEffect(() => {
@@ -21,11 +24,12 @@ export default function CheckoutPage() {
     if (savedCart) {
       setCartItems(JSON.parse(savedCart));
     }
+    console.log(cartItems);
   }, []);
 
   const totalPrice = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
-    0
+    0,
   );
 
   const handlePlaceOrder = () => {
@@ -38,8 +42,8 @@ export default function CheckoutPage() {
 
     alert(
       `Order placed!\nTotal: $${totalPrice.toFixed(
-        2
-      )}\nPayment method: ${paymentMethod}\nDelivery address: ${address}`
+        2,
+      )}\nPayment method: ${paymentMethod}\nDelivery address: ${address}`,
     );
 
     localStorage.removeItem("cart");

@@ -10,41 +10,50 @@ export default function LoginPage() {
   const [password, setPassword] = useState<string>("");
   const router = useRouter();
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // 🔍 Get users from localStorage
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    try {
+      const res = await fetch("http://localhost:3000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const user = users.find(
-      (u: { email: string; password: string }) =>
-        u.email === email && u.password === password
-    );
+      const data = await res.json();
 
-    if (!user) {
-      toast.error("Invalid email or password");
-      return;
+      if (!res.ok) {
+        toast.error(data.error || "Login failed");
+        return;
+      }
+
+      const user = data.user;
+
+      localStorage.setItem("loggedInUser", JSON.stringify(user));
+
+      document.cookie =
+        "loggedIn=true; path=/; max-age=86400; SameSite=None; Secure";
+
+      if (user.role == "admin") {
+        document.cookie =
+          "role=admin; path=/; max-age=86400; SameSite=None; Secure;";
+      } else {
+        document.cookie =
+          "role=user; path=/; max-age=86400; SameSite=None; Secure;";
+      }
+      window.dispatchEvent(new Event("authChange"));
+
+      toast.success("Login Successful!");
+
+      setTimeout(() => {
+        router.push("/");
+        window.location.reload();
+      }, 1200);
+    } catch (error: any) {
+      toast.error("Server Error: " + error.message);
     }
-
-    // ✅ UI auth (Navbar)
-    localStorage.setItem("loggedInUser", email);
-
-    // ✅ Middleware auth
-    document.cookie =
-      "loggedIn=true; path=/; max-age=86400; SameSite=None; Secure";
-
-    // 🔔 Notify navbar instantly
-    window.dispatchEvent(new Event("authChange"));
-
-    // alert("Login successful");
-
-    // Redirect
-    // router.refresh();
-    toast.success(" Login Successful");
-    setTimeout(() => {
-      window.location.reload();
-      router.push("/");
-    }, 1200);
   }
 
   return (
@@ -62,7 +71,6 @@ export default function LoginPage() {
               type="email"
               placeholder="Enter email"
               required
-              autoComplete="email"
             />
           </div>
 
@@ -75,7 +83,6 @@ export default function LoginPage() {
               type="password"
               placeholder="Enter password"
               required
-              autoComplete="current-password"
             />
           </div>
 
