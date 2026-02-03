@@ -1,5 +1,6 @@
 import mysql from "mysql2/promise";
 import { NextRequest } from "next/server";
+import connection from "src/lib/db";
 
 interface CartRequestBody {
   id: number;
@@ -15,15 +16,7 @@ interface CartRequestBody {
 
 export async function GET() {
   try {
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
-
     const [rows] = await connection.execute("SELECT * FROM `carts` WHERE 1");
-    await connection.end();
 
     return new Response(JSON.stringify(rows), {
       headers: { "Content-Type": "application/json" },
@@ -56,18 +49,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
-
     const sql =
       " INSERT INTO carts ( `menu_id`, `user_id`,`item`, `quantity`, `price`, `subtotal`) VALUES (?,?,?,?,?,?)";
 
     await connection.execute(sql, [id, user_id, name, 1, price, price]);
-    await connection.end();
 
     return new Response(
       JSON.stringify({ message: "User created successfully" }),
@@ -89,17 +74,8 @@ export async function DELETE(request: NextRequest) {
     const body = await request.json();
     const { deleteId } = body;
 
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
-
     const sql = `DELETE FROM carts WHERE user_id = ?`;
     await connection.execute(sql, [deleteId]);
-
-    await connection.end();
 
     return new Response(
       JSON.stringify({ message: "Item Deleted Successfully" }),

@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import mysql from "mysql2/promise";
+import connection from "src/lib/db";
 
 interface SettingRequestBody {
   name: string;
@@ -13,19 +14,11 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as SettingRequestBody;
     const { name, address, phone, email } = body;
 
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
-
     const sql = `
   " INSERT INTO settings (id, name, address, phone, email, created_at, updated_at) VALUES (?,?,?,?,?,?,?)"
     `;
 
     await connection.execute(sql, [name, address, phone, email]);
-    await connection.end();
 
     return new Response(
       JSON.stringify({ message: "User created successfully" }),
@@ -44,14 +37,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
     const [rows] = await connection.execute("SELECT * FROM `settings` WHERE 1");
-    await connection.end();
     return new Response(JSON.stringify(rows), {
       headers: { "Content-Type": "application/json" },
     });
@@ -69,16 +55,10 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     console.log(body);
     const { adminId, name, address, phone, email } = body;
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
+
     const sql =
       "UPDATE settings SET `name`=?,`address`=?,`phone`=?,`email`=? WHERE `id`=?";
     await connection.execute(sql, [name, address, phone, email, adminId]);
-    await connection.end();
 
     return new Response(JSON.stringify({ message: "Edit save Succesful" }), {
       headers: { "Content-Type": "application/json" },

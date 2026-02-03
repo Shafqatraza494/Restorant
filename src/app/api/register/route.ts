@@ -1,6 +1,7 @@
 import mysql from "mysql2/promise";
-import {NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import React from "react";
+import connection from "src/lib/db";
 
 interface UserRequestBody {
   name: string;
@@ -11,15 +12,7 @@ interface UserRequestBody {
 
 export async function GET() {
   try {
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
-
     const [rows] = await connection.execute("SELECT NOW() AS currentTime");
-    await connection.end();  
 
     return new Response(JSON.stringify(rows), {
       headers: { "Content-Type": "application/json" },
@@ -37,21 +30,17 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as UserRequestBody;
     const { name, email, password } = body;
 
-    let role = 'user';
+    let role = "user";
 
     if (!name || !email || !password || !role) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
-
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
 
     const sql = `
       INSERT INTO users (name, email, password ,role)
@@ -59,11 +48,13 @@ export async function POST(request: NextRequest) {
     `;
 
     await connection.execute(sql, [name, email, password, role]);
-    await connection.end();
 
-    return new Response(JSON.stringify({ message: "User created successfully" }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ message: "User created successfully" }),
+      {
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,

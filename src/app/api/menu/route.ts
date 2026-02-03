@@ -2,6 +2,7 @@ import mysql from "mysql2/promise";
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
+import connection from "src/lib/db";
 
 interface MenuRequestBody {
   name: string;
@@ -38,20 +39,10 @@ export async function POST(request: NextRequest) {
 
     const imageUrl = `/uploads/${fileName}`;
 
-    // ✅ DB insert
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
-
     const sql =
       "INSERT INTO menu (name, category, price, image) VALUES (?, ?, ?, ?)";
 
     await connection.execute(sql, [name, category, price, imageUrl]);
-
-    await connection.end();
 
     return NextResponse.json({
       message: "Item saved successfully",
@@ -63,18 +54,9 @@ export async function POST(request: NextRequest) {
 }
 export async function GET() {
   try {
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
-
     const [rows] = await connection.execute(
       "SELECT id, name, category, price , image FROM menu",
     );
-
-    await connection.end();
 
     return NextResponse.json(rows, {
       headers: { "Content-Type": "application/json" },
@@ -90,17 +72,8 @@ export async function DELETE(request: NextRequest) {
     const body = await request.json();
     const { id } = body;
 
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
-
     const sql = `DELETE FROM menu WHERE id = ?`;
     await connection.execute(sql, [id]);
-
-    await connection.end();
 
     return new Response(
       JSON.stringify({ message: "Item Deleted Successfully" }),
@@ -120,16 +93,10 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const { name, category, price, id } = body;
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
+
     const sql =
       "UPDATE `menu` SET `name`=?,`category`=?,`price`=? WHERE `id`=?";
     await connection.execute(sql, [name, category, price, id]);
-    await connection.end();
 
     return new Response(JSON.stringify({ message: "Edit save Succesful" }), {
       headers: { "Content-Type": "application/json" },

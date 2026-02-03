@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import mysql, { ResultSetHeader } from "mysql2/promise";
+import connection from "src/lib/db";
 
 interface UserRequestBody {
   item: string;
@@ -15,13 +16,6 @@ interface UserRequestBody {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json(); // body = array of items
-
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
 
     for (const items of body) {
       const { id, item, quantity, price } = items;
@@ -52,8 +46,6 @@ export async function POST(request: NextRequest) {
       await connection.execute(sql2, [orderId, status]);
     }
 
-    await connection.end();
-
     return new Response(
       JSON.stringify({ message: "Order created successfully" }),
       { headers: { "Content-Type": "application/json" } },
@@ -70,15 +62,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
-
     const [rows] = await connection.execute("SELECT * FROM `orders` WHERE 1");
-    await connection.end();
 
     return new Response(JSON.stringify(rows), {
       headers: { "Content-Type": "application/json" },
@@ -98,17 +82,8 @@ export async function DELETE(request: NextRequest) {
     const { deleteId } = body;
     console.log(deleteId);
 
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "restorants_1",
-    });
-
     const sql = `DELETE FROM orders WHERE id = ?`;
     await connection.execute(sql, [deleteId]);
-
-    await connection.end();
 
     return new Response(
       JSON.stringify({ message: "Item Deleted Successfully" }),
