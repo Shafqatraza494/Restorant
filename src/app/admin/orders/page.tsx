@@ -23,28 +23,33 @@ export default function OrdersPage() {
   // Function to update order status
   async function updateStatus(id: number, newStatus: string) {
     try {
-      const res = await fetch("http://localhost:3000/api/status", {
+      const res = await fetch("/api/status", {
         method: "PUT",
+        credentials: "include", // 🔑 important
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id, newStatus }),
       });
 
+      // 🔥 handle non-JSON / redirect safely
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to update status");
+      }
+
       const data = await res.json();
 
-      if (res.ok) {
-        toast.success(data.message || "Updated Successfully");
+      toast.success(data.message || "Updated Successfully");
 
-        // Update frontend state
-        setStatus((prev) =>
-          prev.map((order) =>
-            order.order_id === id ? { ...order, status: newStatus } : order,
-          ),
-        );
-      }
+      // update frontend state
+      setStatus((prev) =>
+        prev.map((order) =>
+          order.order_id === id ? { ...order, status: newStatus } : order,
+        ),
+      );
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || "Something went wrong");
     }
   }
 

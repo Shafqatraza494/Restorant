@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     await connection.execute(sql, [id, user_id, name, 1, price, price]);
 
     return new Response(
-      JSON.stringify({ message: "User created successfully" }),
+      JSON.stringify({ message: "added to cart successfully" }),
       {
         headers: { "Content-Type": "application/json" },
       },

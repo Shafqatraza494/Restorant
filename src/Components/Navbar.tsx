@@ -60,7 +60,6 @@ function Navbar() {
     window.dispatchEvent(new Event("authChange"));
     toast.success("Loging Out....");
     setTimeout(() => {
-      window.location.reload();
       router.push("/login");
     }, 1200);
     setCollapse(false);

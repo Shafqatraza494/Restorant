@@ -50,6 +50,8 @@ export async function DELETE(request: NextRequest) {
 
 export async function GET() {
   try {
+    console.log("yes");
+
     const [rows] = await connection.execute("SELECT * FROM `users` WHERE 1");
 
     return new Response(JSON.stringify(rows), {

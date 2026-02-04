@@ -5,6 +5,7 @@ const connection = mysql.createPool({
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
   database: process.env.DB_NAME || "restorants_1",
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306, // default MySQL port
   waitForConnections: true,
   connectionLimit: Number(process.env.DB_CONNECTION_LIMIT) || 10,
   queueLimit: 0,

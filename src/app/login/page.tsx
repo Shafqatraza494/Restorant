@@ -44,12 +44,14 @@ export default function LoginPage() {
           "role=user; path=/; max-age=86400; SameSite=None; Secure;";
       }
       window.dispatchEvent(new Event("authChange"));
-
-      toast.success("Login Successful!");
+      if (res.ok) {
+        toast.success("Login Successful!");
+        console.log(res);
+      }
 
       setTimeout(() => {
         router.push("/");
-        window.location.reload();
+        // window.location.reload();
       }, 1200);
     } catch (error: any) {
       toast.error("Server Error: " + error.message);
