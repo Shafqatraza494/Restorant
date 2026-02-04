@@ -44,7 +44,7 @@ function Page() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/cart", {
+      const res = await fetch("/api/cart", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +61,7 @@ function Page() {
 
   async function fetchData() {
     try {
-      const response = await fetch("http://localhost:3000/api/menu");
+      const response = await fetch("/api/menu");
       const result: any = await response.json();
       setMenuItems(result);
       console.log(result);

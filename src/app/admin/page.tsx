@@ -72,7 +72,7 @@ export default function AdminHome() {
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   async function orderStatus() {
     try {
-      const res = await fetch("http://localhost:3000/api/orders");
+      const res = await fetch("/api/orders");
       const data = await res.json();
       setOrder(data.length);
       setAllOrders(data);
@@ -96,7 +96,7 @@ export default function AdminHome() {
 
   async function menufunction() {
     try {
-      const res = await fetch("http://localhost:3000/api/menu");
+      const res = await fetch("/api/menu");
       const data = await res.json();
       setMenu(data.length);
     } catch (error: any) {

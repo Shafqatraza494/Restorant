@@ -34,7 +34,7 @@ export default function EditMenuItem() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const res = fetch("http://localhost:3000/api/menu", {
+      const res = fetch("/api/menu", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -56,7 +56,7 @@ export default function EditMenuItem() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("http://localhost:3000/api/menu");
+        const res = await fetch("/api/menu");
 
         const result: MenuItem[] = await res.json();
 

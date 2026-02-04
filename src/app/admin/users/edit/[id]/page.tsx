@@ -40,7 +40,7 @@ export default function EditUser() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:3000/api/users", {
+      const res = await fetch("/api/users", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -66,7 +66,7 @@ export default function EditUser() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("http://localhost:3000/api/users");
+        const res = await fetch("/api/users");
         const result: Users[] = await res.json();
         const menuitem: Users[] = result.filter((item: Users) => {
           return id == item.id;

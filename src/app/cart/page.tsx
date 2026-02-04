@@ -27,7 +27,7 @@ export default function OrderConfirmationPage() {
 
   async function fetchData() {
     try {
-      const resp = await fetch("http://localhost:3000/api/cart");
+      const resp = await fetch("/api/cart");
       const result: any = await resp.json();
       setCartItems(result);
     } catch (error: any) {
@@ -47,7 +47,7 @@ export default function OrderConfirmationPage() {
     }
 
     try {
-      let resp = await fetch("http://localhost:3000/api/cart", {
+      let resp = await fetch("/api/cart", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

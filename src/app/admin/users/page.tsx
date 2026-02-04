@@ -16,7 +16,7 @@ export default function UsersPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("http://localhost:3000/api/users");
+        const res = await fetch("/api/users");
         const result = await res.json();
         setData(result);
       } catch (err) {
@@ -49,7 +49,7 @@ export default function UsersPage() {
 
   async function handleDelete(id: number) {
     try {
-      const response = await fetch("http://localhost:3000/api/users", {
+      const response = await fetch("/api/users", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

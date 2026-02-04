@@ -12,7 +12,7 @@ export default function SettingsPage() {
 
   async function fetchData() {
     try {
-      const resp = await fetch("http://localhost:3000/api/settings", {
+      const resp = await fetch("/api/settings", {
         method: "GET",
       });
 
@@ -36,7 +36,7 @@ export default function SettingsPage() {
     e.preventDefault();
 
     try {
-      const resp = await fetch("http://localhost:3000/api/settings", {
+      const resp = await fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

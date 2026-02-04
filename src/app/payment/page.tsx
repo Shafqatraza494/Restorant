@@ -61,7 +61,7 @@ export default function PaymentPage() {
 
   const handleCOD = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/orders", {
+      const response = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "Application/json",
@@ -100,7 +100,7 @@ export default function PaymentPage() {
     }
 
     try {
-      let resp = await fetch("http://localhost:3000/api/cart", {
+      let resp = await fetch("/api/cart", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

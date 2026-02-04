@@ -33,7 +33,7 @@ export default function AddMenuItem() {
       formData.append("category", category);
       formData.append("price", price.toString());
       formData.append("image", image);
-      const response = await fetch("http://localhost:3000/api/menu", {
+      const response = await fetch("/api/menu", {
         method: "POST",
         body: formData,
       });

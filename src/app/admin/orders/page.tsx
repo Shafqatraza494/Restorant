@@ -58,7 +58,7 @@ export default function OrdersPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("http://localhost:3000/api/orders");
+        const res = await fetch("/api/orders");
         const result = await res.json();
 
         setOrders(result);
@@ -73,7 +73,7 @@ export default function OrdersPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("http://localhost:3000/api/status");
+        const res = await fetch("/api/status");
         const result = await res.json();
         console.log("ytr5gy5rtg5", result);
 
@@ -98,7 +98,7 @@ export default function OrdersPage() {
 
   async function confirmDelete() {
     try {
-      const response = await fetch("http://localhost:3000/api/orders", {
+      const response = await fetch("/api/orders", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
