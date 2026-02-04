@@ -17,6 +17,9 @@ interface CartItem {
 export default function OrderConfirmationPage() {
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [checkingAuth, setCheckingAuth] = useState<boolean>(true);
+
   console.log("mm", cartItems);
 
   const router = useRouter();
@@ -49,9 +52,6 @@ export default function OrderConfirmationPage() {
     }
   }
 
-  useEffect(() => {
-    fetchData();
-  }, []);
   const handleDeleteItem = async (id: number) => {
     try {
       const resp = await fetch("/api/cart", {
@@ -95,6 +95,28 @@ export default function OrderConfirmationPage() {
       toast.error(error.message || "nothing done with that thing you passed");
     }
   };
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include", // 🔥 important for HttpOnly cookie
+        });
+
+        if (res.ok) {
+          setIsLoggedIn(true);
+          fetchData(); // only fetch cart if logged in
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch {
+        setIsLoggedIn(false);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const handleConfirm = () => {
     // Save current cart + order number to localStorage so payment page can read
@@ -104,6 +126,24 @@ export default function OrderConfirmationPage() {
     );
     router.push("/payment");
   };
+
+  if (checkingAuth) {
+    return <p className="text-center mt-5">Checking authentication...</p>;
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="container py-5 text-center">
+        <h2>Please login to view your cart</h2>
+        <button
+          className="btn btn-primary mt-3"
+          onClick={() => router.push("/login")}
+        >
+          Login
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-5">
