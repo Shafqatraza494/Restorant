@@ -1,11 +1,31 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-export function middleware(request: NextRequest) {
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || "your_jwt_secret_here",
+);
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const loggedIn = request.cookies.get("loggedIn")?.value === "true";
-  const role = request.cookies.get("role")?.value?.toLowerCase();
+  const token = request.cookies.get("token")?.value;
+
+  let user = null;
+
+  if (token) {
+    try {
+      const { payload } = await jwtVerify(token, JWT_SECRET);
+      user = payload; // contains id, email, role, etc.
+    } catch (e) {
+      // Token invalid or expired
+      user = null;
+    }
+  }
+
+  const loggedIn = Boolean(user);
+  const role =
+    typeof user?.role === "string" ? user.role.toLowerCase() : "user";
 
   // AUTH ROUTES HANDLING
   if ((pathname === "/login" || pathname === "/register") && loggedIn) {

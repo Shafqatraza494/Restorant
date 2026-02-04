@@ -22,12 +22,24 @@ function Navbar() {
     return null;
   }
 
-  // 🔐 AUTH SYNC
   useEffect(() => {
-    const syncAuth = () => {
-      const user = getCookie("loggedIn");
-      setLoggedIn(!!user);
-    };
+    async function syncAuth() {
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include", // send cookies
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setLoggedIn(true);
+          // optionally set user info in state here
+        } else {
+          setLoggedIn(false);
+        }
+      } catch {
+        setLoggedIn(false);
+      }
+    }
 
     syncAuth();
     window.addEventListener("authChange", syncAuth);
@@ -53,16 +65,29 @@ function Navbar() {
     return () => window.removeEventListener("cartUpdate", updateCartCount);
   }, []);
 
-  // 🚪 LOGOUT
-  function handleLogout() {
-    localStorage.removeItem("loggedInUser");
-    document.cookie = "loggedIn=; path=/; max-age=0";
-    window.dispatchEvent(new Event("authChange"));
-    toast.success("Loging Out....");
-    setTimeout(() => {
-      router.push("/login");
-    }, 1200);
-    setCollapse(false);
+  async function handleLogout() {
+    try {
+      // Call backend logout endpoint to clear HttpOnly cookie
+      await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include", // send cookies to backend
+      });
+
+      // Clear any client-side data
+      localStorage.removeItem("loggedInUser");
+
+      // Update app state
+      window.dispatchEvent(new Event("authChange"));
+      toast.success("Logging Out...");
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 1200);
+
+      setCollapse(false);
+    } catch (error) {
+      toast.error("Logout failed. Please try again.");
+    }
   }
 
   return (

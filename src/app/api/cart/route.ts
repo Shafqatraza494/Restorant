@@ -33,32 +33,49 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as CartRequestBody;
-    console.log(body);
 
-    const { id, name, price, category, user_id } = body;
+    const { id, name, price, user_id } = body;
 
-    // console.log("kk", item);
-
-    if (!name || !price || !category) {
+    if (!id || !name || !price || !user_id) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        },
+        { status: 400 },
       );
     }
 
-    const sql =
-      " INSERT INTO carts ( `menu_id`, `user_id`,`item`, `quantity`, `price`, `subtotal`) VALUES (?,?,?,?,?,?)";
+    // 🔍 check if item already exists for this user
+    const [rows]: any = await connection.execute(
+      "SELECT * FROM carts WHERE menu_id = ? AND user_id = ?",
+      [id, user_id],
+    );
 
-    await connection.execute(sql, [id, user_id, name, 1, price, price]);
+    if (rows.length > 0) {
+      // 👉 item exists → quantity increase
+      await connection.execute(
+        `UPDATE carts 
+         SET quantity = quantity + 1, 
+             subtotal = (quantity + 1) * price 
+         WHERE menu_id = ? AND user_id = ?`,
+        [id, user_id],
+      );
+
+      return new Response(
+        JSON.stringify({ message: "Cart updated successfully" }),
+        { headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    // 👉 item not exists → insert new
+    await connection.execute(
+      `INSERT INTO carts 
+       (menu_id, user_id, item, quantity, price, subtotal) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [id, user_id, name, 1, price, price],
+    );
 
     return new Response(
-      JSON.stringify({ message: "added to cart successfully" }),
-      {
-        headers: { "Content-Type": "application/json" },
-      },
+      JSON.stringify({ message: "Added to cart successfully" }),
+      { headers: { "Content-Type": "application/json" } },
     );
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
@@ -67,24 +84,35 @@ export async function POST(request: NextRequest) {
     });
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////
 
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { deleteId } = body;
+    const { menuId } = body;
 
-    const sql = `DELETE FROM carts WHERE user_id = ?`;
-    await connection.execute(sql, [deleteId]);
+    if (!menuId) {
+      return new Response(JSON.stringify({ error: "menuId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Delete all cart rows with this menu_id
+    await connection.execute("DELETE FROM carts WHERE menu_id = ?", [menuId]);
 
     return new Response(
-      JSON.stringify({ message: "Item Deleted Successfully" }),
+      JSON.stringify({
+        message: "All orders of this item deleted successfully",
+      }),
       {
+        status: 200,
         headers: { "Content-Type": "application/json" },
       },
     );
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Failed to Delete Item" }), {
+    return new Response(JSON.stringify({ error: "Failed to delete items" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

@@ -16,10 +16,9 @@ export default function LoginPage() {
     try {
       const res = await fetch("/api/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: "include",
       });
 
       const data = await res.json();
@@ -31,27 +30,17 @@ export default function LoginPage() {
 
       const user = data.user;
 
+      // Save user info in localStorage or React state
       localStorage.setItem("loggedInUser", JSON.stringify(user));
 
-      document.cookie =
-        "loggedIn=true; path=/; max-age=86400; SameSite=None; Secure";
+      // Don't set JWT token manually; it's set as HttpOnly cookie by server
 
-      if (user.role == "admin") {
-        document.cookie =
-          "role=admin; path=/; max-age=86400; SameSite=None; Secure;";
-      } else {
-        document.cookie =
-          "role=user; path=/; max-age=86400; SameSite=None; Secure;";
-      }
       window.dispatchEvent(new Event("authChange"));
-      if (res.ok) {
-        toast.success("Login Successful!");
-        console.log(res);
-      }
+
+      toast.success("Login Successful!");
 
       setTimeout(() => {
         router.push("/");
-        // window.location.reload();
       }, 1200);
     } catch (error: any) {
       toast.error("Server Error: " + error.message);

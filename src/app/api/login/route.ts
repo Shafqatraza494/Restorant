@@ -1,11 +1,14 @@
 import mysql from "mysql2/promise";
 import { NextRequest } from "next/server";
 import connection from "src/lib/db";
+import jwt from "jsonwebtoken";
 
 interface UserRequestBody {
   email: string;
   password: string;
 }
+
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_here";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,9 +25,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sql = `
-      SELECT id, name, email, role FROM users WHERE email = ? AND password = ?
-    `;
+    const sql = `SELECT id, name, email, role FROM users WHERE email = ? AND password = ?`;
 
     const [rows] = await connection.execute(sql, [email, password]);
 
@@ -40,8 +41,25 @@ export async function POST(request: NextRequest) {
 
     const user = (rows as any[])[0];
 
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "1h" },
+    );
+
+    // Set HttpOnly cookie
+    // For security, set SameSite=Lax (or Strict) and Secure in production (HTTPS)
+    const isProduction = process.env.NODE_ENV === "production";
+
     return new Response(JSON.stringify({ message: "Login successful", user }), {
-      headers: { "Content-Type": "application/json" },
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Set-Cookie": `token=${token}; HttpOnly; Path=/; Max-Age=3600; SameSite=Lax${
+          isProduction ? "; Secure" : ""
+        }`,
+      },
     });
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
