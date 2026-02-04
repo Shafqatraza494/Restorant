@@ -49,6 +49,7 @@ export async function middleware(request: NextRequest) {
   const protectedRoutes = [
     "/booking",
     "/cart",
+    "/carts",
     "/checkout",
     "/payment",
     "/order_conformations",
@@ -66,6 +67,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/carts",
     "/booking/:path*",
     "/cart/:path*",
     "/checkout/:path*",
