@@ -202,6 +202,17 @@ function Navbar() {
               <span className="badge bg-danger ms-1">{cartCount}</span>
             )}
           </Link>
+          {/* CART */}
+          <Link
+            href="/cart"
+            className="nav-item nav-link position-relative"
+            onClick={() => setCollapse(false)}
+          >
+            Cart
+            {cartCount > 0 && (
+              <span className="badge bg-danger ms-1">{cartCount}</span>
+            )}
+          </Link>
         </div>
 
         {/* BUTTON */}
