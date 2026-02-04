@@ -71,29 +71,7 @@ export default function OrderConfirmationPage() {
   };
 
   const handleCancel = async () => {
-    let localData = localStorage.getItem("loggedInUser");
-    let userId = null;
-    if (localData) {
-      userId = JSON.parse(localData);
-    }
-
-    try {
-      let resp = await fetch("/api/cart", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ deleteId: userId.id }),
-      });
-      const data = await resp.json();
-      if (resp.ok) {
-        toast.success(data.message);
-        window.dispatchEvent(new Event("cartUpdate"));
-        router.push("/");
-      }
-    } catch (error: any) {
-      toast.error(error.message || "nothing done with that thing you passed");
-    }
+    router.push("/menu");
   };
   useEffect(() => {
     const checkAuth = async () => {

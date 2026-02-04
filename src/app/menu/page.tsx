@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -14,38 +15,23 @@ interface CartItem {
 
 function Page() {
   const [menuItems, setMenuItems] = useState<CartItem[]>([]);
-  console.log("mmm", setMenuItems);
+  const router = useRouter();
 
-  function addToCart(item: CartItem) {
-    let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-
-    const existingIndex = cart.findIndex(
-      (cartItem: CartItem) => cartItem.id === item.id,
-    );
-
-    if (existingIndex > -1) {
-      cart[existingIndex].quantity += item.category;
-    } else {
-      cart.push(item);
-    }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-
-    // Dispatch event so Navbar and other components know cart updated
-    window.dispatchEvent(new Event("cartUpdate"));
-
-    toast.success("Added to cart!");
-  }
   async function handleCart(item: any) {
-    let localData = localStorage.getItem("loggedInUser");
-    if (localData) {
-      let loggedInUser = JSON.parse(localData);
-      item.user_id = loggedInUser.id;
-    }
-
     try {
+      // 🔐 check login first
+      const authRes = await fetch("/api/auth/me", {
+        credentials: "include",
+      });
+
+      if (!authRes.ok) {
+        toast.error("Please login first to add items to cart");
+        return;
+      }
+
       const res = await fetch("/api/cart", {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -53,9 +39,16 @@ function Page() {
       });
 
       const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Failed to add to cart");
+        return;
+      }
+
       toast.success(data.message);
+      window.dispatchEvent(new Event("cartUpdate"));
     } catch (error: any) {
-      toast.error(error.message || "Error While adding to cart");
+      toast.error(error.message || "Error while adding to cart");
     }
   }
 

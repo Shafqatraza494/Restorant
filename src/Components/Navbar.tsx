@@ -218,7 +218,7 @@ function Navbar() {
             className="btn btn-primary ms-lg-3 mt-3 mt-lg-0"
             onClick={() => setCollapse(false)}
           >
-            Book A Table
+            Login
           </Link>
         )}
       </div>

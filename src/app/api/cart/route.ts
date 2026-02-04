@@ -75,55 +75,75 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as CartRequestBody;
+    // 🔐 1. Get JWT from HttpOnly cookie
+    const cookie = request.headers.get("cookie") || "";
+    const tokenMatch = cookie.match(/token=([^;]+)/);
 
-    const { id, name, price, user_id } = body;
+    if (!tokenMatch) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
+    }
 
-    if (!id || !name || !price || !user_id) {
+    const token = tokenMatch[1];
+
+    // 🔐 2. Verify token
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const userId = payload.id;
+
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
+    // 📦 3. Read request body
+    const body = await request.json();
+    const { id, name, price } = body;
+
+    if (!id || !name || !price) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400 },
       );
     }
 
-    // 🔍 check if item already exists for this user
+    // 🔍 4. Check if item already exists
     const [rows]: any = await connection.execute(
       "SELECT * FROM carts WHERE menu_id = ? AND user_id = ?",
-      [id, user_id],
+      [id, userId],
     );
 
     if (rows.length > 0) {
-      // 👉 item exists → quantity increase
+      // ➕ Increase quantity
       await connection.execute(
         `UPDATE carts 
-         SET quantity = quantity + 1, 
-             subtotal = (quantity + 1) * price 
+         SET quantity = quantity + 1,
+             subtotal = (quantity + 1) * price
          WHERE menu_id = ? AND user_id = ?`,
-        [id, user_id],
+        [id, userId],
       );
 
       return new Response(
-        JSON.stringify({ message: "Cart updated successfully" }),
-        { headers: { "Content-Type": "application/json" } },
+        JSON.stringify({ message: "add to Cart successfully" }),
+        { status: 200 },
       );
     }
 
-    // 👉 item not exists → insert new
+    // ➕ Insert new item
     await connection.execute(
-      `INSERT INTO carts 
-       (menu_id, user_id, item, quantity, price, subtotal) 
+      `INSERT INTO carts (menu_id, user_id, item, quantity, price, subtotal)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [id, user_id, name, 1, price, price],
+      [id, userId, name, 1, price, price],
     );
 
     return new Response(
       JSON.stringify({ message: "Added to cart successfully" }),
-      { headers: { "Content-Type": "application/json" } },
+      { status: 200 },
     );
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
     });
   }
 }
