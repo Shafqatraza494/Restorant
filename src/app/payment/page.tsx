@@ -1,51 +1,51 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface CartItem {
   id: number;
-  name: string;
+  item: string;
+  name?: string;
   price: number;
   quantity: number;
-  item: string;
 }
 
 export default function PaymentPage() {
-  const [orderNumber, setOrderNumber] = useState<string>("");
+  const [orderNumber, setOrderNumber] = useState<string>('');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [message, setMessage] = useState("");
-
-  // const [discount, setDiscount] = useState<number>();
+  const [message, setMessage] = useState('');
   const router = useRouter();
 
+  // Fetch cart from API on mount
   useEffect(() => {
-    const currentOrder = localStorage.getItem("currentOrder");
-    if (currentOrder) {
+    const fetchCart = async () => {
       try {
-        const parsed = JSON.parse(currentOrder);
+        const resp = await fetch('/api/cart', { credentials: 'include' });
+        if (!resp.ok) throw new Error('Failed to fetch cart');
 
-        if (Array.isArray(parsed.cartItems)) {
-          const sanitizedCartItems = parsed.cartItems.map((item: any) => ({
-            ...item,
-            price: Number(item.price) || 0,
-            quantity: Number(item.quantity) || 0,
-          }));
+        const data = await resp.json();
 
-          setCartItems(sanitizedCartItems);
-        } else {
-          setCartItems([]);
-        }
+        // Ensure price & quantity are numbers
+        const sanitizedCart = (data.cartItems || []).map((item: any) => ({
+          ...item,
+          price: Number(item.price) || 0,
+          quantity: Number(item.quantity) || 0,
+        }));
 
-        setOrderNumber(parsed.orderNumber || "");
-      } catch (error) {
-        console.error("Failed to parse currentOrder:", error);
+        setCartItems(sanitizedCart);
+        setOrderNumber(data.orderNumber || '');
+      } catch (err: any) {
+        console.error(err);
+        toast.error('Failed to load cart');
         setCartItems([]);
-        setOrderNumber("");
+        setOrderNumber('');
       }
-    }
+    };
+
+    fetchCart();
   }, []);
 
   const totalPrice = cartItems.reduce(
@@ -60,78 +60,80 @@ export default function PaymentPage() {
   const finalTotal = Math.max(totalPrice + taxAmount - discount, 0);
 
   const handleCOD = async () => {
+    if (cartItems.length === 0) {
+      toast.error('Your cart is empty');
+      return;
+    }
+
+    setIsProcessing(true);
+
     try {
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "Application/json",
-        },
+      const resp = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cartItems),
+        credentials: 'include',
       });
-      console.log(response);
-      if (response.ok) {
-        toast.success("saved success");
-        emptyCart();
-      } else {
-        toast.error("error in backend");
-      }
-    } catch (error: any) {
-      toast.error(error.message);
-    }
 
-    setTimeout(() => {
-      setIsProcessing(false);
-      setMessage("Order Placed - Cash on Delivery!");
+      if (!resp.ok) throw new Error('Failed to place order');
 
-      localStorage.removeItem("cart");
-      localStorage.removeItem("currentOrder");
-      window.dispatchEvent(new Event("cartUpdate"));
+      toast.success('Order placed successfully');
+      setMessage('Order Placed - Cash on Delivery!');
 
+      // Clear cart on server
+      await emptyCart();
+
+      // Clear local state
       setCartItems([]);
-      setOrderNumber("");
-      // router.push("/");
-    }, 2000);
-  };
-  async function emptyCart() {
-    let localData = localStorage.getItem("loggedInUser");
-    let userId = null;
-    if (localData) {
-      userId = JSON.parse(localData);
-    }
+      setOrderNumber('');
+      window.dispatchEvent(new Event('cartUpdate'));
 
+      // Optional redirect after 2s
+      setTimeout(() => router.push('/'), 2000);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || 'Failed to place order');
+      setMessage('Failed to place order');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Clear user's cart on server
+  async function emptyCart() {
     try {
-      let resp = await fetch("/api/cart", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ deleteId: userId.id }),
+      const resp = await fetch('/api/cart', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}), // delete all items
+        credentials: 'include',
       });
-      const data = await resp.json();
-      if (resp.ok) {
-        toast.success(data.message);
-        window.dispatchEvent(new Event("cartUpdate"));
-        router.push("/");
+
+      if (!resp.ok) {
+        const data = await resp.json();
+        toast.error(data.error || 'Failed to clear cart');
       }
     } catch (error: any) {
-      toast.error(error.message || "nothing done with that thing you passed");
+      toast.error(error.message || 'Failed to clear cart');
     }
   }
 
   return (
-    <div className="container py-5">
-      <h1 className="mb-4 text-center">Payment</h1>
+    <div className='container py-5'>
+      <h1 className='mb-4 text-center'>Payment</h1>
 
-      <div className="row">
-        <div className="col-md-5 border p-3 mb-4">
-          <h4>Order Summary</h4>
+      <div className='row'>
+        {/* Order Summary */}
+        <div className='col-md-5 border p-3 mb-4 bg-light rounded'>
+          <h4 className='mb-3'>Order Summary</h4>
           <p>
-            <strong>Order Number:</strong> {orderNumber || "N/A"}
+            <strong>Order Number:</strong> {orderNumber || 'N/A'}
           </p>
+
           {cartItems.length === 0 ? (
             <p>Your cart is empty.</p>
           ) : (
-            <table className="table table-sm">
+            <table className='table table-sm'>
               <thead>
                 <tr>
                   <th>Item</th>
@@ -150,56 +152,57 @@ export default function PaymentPage() {
                   </tr>
                 ))}
                 <tr>
-                  <td colSpan={3} className="text-end fw-bold">
+                  <td colSpan={3} className='text-end fw-bold'>
                     Subtotal:
                   </td>
                   <td>Rs: {totalPrice.toFixed(2)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={3} className="text-end fw-bold">
+                  <td colSpan={3} className='text-end fw-bold'>
                     Tax (10%):
                   </td>
                   <td>Rs: {taxAmount.toFixed(2)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={3} className="text-end fw-bold">
+                  <td colSpan={3} className='text-end fw-bold'>
                     Discount:
                   </td>
                   <td>-Rs: {discount.toFixed(2)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={3} className="text-end fw-bold fs-5">
+                  <td colSpan={3} className='text-end fw-bold fs-5'>
                     Total:
                   </td>
-                  <td className="fs-5 fw-bold">Rs: {finalTotal.toFixed(2)}</td>
+                  <td className='fs-5 fw-bold'>Rs: {finalTotal.toFixed(2)}</td>
                 </tr>
               </tbody>
             </table>
           )}
         </div>
 
-        <div className="col-md-7">
+        {/* Payment Method */}
+        <div className='col-md-7'>
           <h4>Payment Method</h4>
-          <div className="mt-3 mb-3">
-            <span className="badge bg-dark p-2 fs-6">Cash on Delivery</span>
+          <div className='mt-3 mb-3'>
+            <span className='badge bg-dark p-2 fs-6'>Cash on Delivery</span>
           </div>
 
           <button
-            className="btn btn-success w-100"
+            className='btn btn-success w-100'
             disabled={isProcessing}
             onClick={handleCOD}
           >
             {isProcessing
-              ? "Placing Order..."
-              : "Place Order (Cash on Delivery)"}
+              ? 'Placing Order...'
+              : 'Place Order (Cash on Delivery)'}
           </button>
 
           {message && (
             <div
               className={`alert mt-4 text-center ${
-                message.includes("Order") ? "alert-success" : "alert-danger"
+                message.includes('Order') ? 'alert-success' : 'alert-danger'
               }`}
-              role="alert"
+              role='alert'
             >
               {message}
             </div>

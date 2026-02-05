@@ -1,26 +1,24 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface CartItem {
   id: number;
-  name: string;
+  menu_id: number;
+  item: string;
+  name?: string;
   price: number;
   quantity: number;
   image?: string;
-  item: string;
-  menu_id: number;
 }
 
 export default function OrderConfirmationPage() {
-  const [orderNumber, setOrderNumber] = useState<string>("");
+  const [orderNumber, setOrderNumber] = useState<string>('');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [checkingAuth, setCheckingAuth] = useState<boolean>(true);
-
-  console.log("mm", cartItems);
 
   const router = useRouter();
 
@@ -29,60 +27,82 @@ export default function OrderConfirmationPage() {
     0,
   );
 
-  async function fetchData() {
+  // ✅ Fetch cart from new GET /api/cart route
+  async function fetchCart() {
     try {
-      const resp = await fetch("/api/cart");
-      const result: CartItem[] = await resp.json();
+      const resp = await fetch('/api/cart', { credentials: 'include' });
 
-      // 🔹 merge same items
+      if (!resp.ok) {
+        throw new Error('Failed to fetch cart');
+      }
+
+      const data = await resp.json();
+      const items: CartItem[] = data.cartItems || [];
+
+      // Merge same items by menu_id
       const merged: any = Object.values(
-        result.reduce((acc: any, curr) => {
-          if (acc[curr.item]) {
-            acc[curr.item].quantity += curr.quantity;
+        items.reduce((acc: any, curr) => {
+          if (acc[curr.menu_id]) {
+            acc[curr.menu_id].quantity += curr.quantity;
           } else {
-            acc[curr.item] = { ...curr };
+            acc[curr.menu_id] = { ...curr };
           }
           return acc;
         }, {}),
       );
 
       setCartItems(merged);
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Failed to load cart');
+      setCartItems([]);
     }
   }
 
-  const handleDeleteItem = async (id: number) => {
+  const handleDeleteItem = async (menu_id: number) => {
     try {
-      const resp = await fetch("/api/cart", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ menuId: id }),
+      const resp = await fetch('/api/cart', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ menuId: menu_id }),
+        credentials: 'include',
       });
 
+      const data = await resp.json();
+
       if (resp.ok) {
-        toast.success("Item removed");
-        fetchData(); // refresh cart
-        window.dispatchEvent(new Event("cartUpdate"));
+        toast.success(data.message);
+        fetchCart(); // refresh cart
+        window.dispatchEvent(new Event('cartUpdate'));
+      } else {
+        toast.error(data.error || 'Failed to remove item');
       }
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || 'Something went wrong');
     }
   };
 
-  const handleCancel = async () => {
-    router.push("/menu");
+  const handleCancel = () => {
+    router.push('/menu');
   };
+
+  const handleConfirm = () => {
+    // Save cart and order number to localStorage for payment page
+    localStorage.setItem(
+      'currentOrder',
+      JSON.stringify({ orderNumber, cartItems }),
+    );
+    router.push('/payment');
+  };
+
+  // ✅ Check authentication and fetch cart
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch("/api/auth/me", {
-          credentials: "include", // 🔥 important for HttpOnly cookie
-        });
-
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
         if (res.ok) {
           setIsLoggedIn(true);
-          fetchData(); // only fetch cart if logged in
+          fetchCart();
         } else {
           setIsLoggedIn(false);
         }
@@ -96,26 +116,17 @@ export default function OrderConfirmationPage() {
     checkAuth();
   }, []);
 
-  const handleConfirm = () => {
-    // Save current cart + order number to localStorage so payment page can read
-    localStorage.setItem(
-      "currentOrder",
-      JSON.stringify({ orderNumber, cartItems }),
-    );
-    router.push("/payment");
-  };
-
   if (checkingAuth) {
-    return <p className="text-center mt-5">Checking authentication...</p>;
+    return <p className='text-center mt-5'>Checking authentication...</p>;
   }
 
   if (!isLoggedIn) {
     return (
-      <div className="container py-5 text-center">
+      <div className='container py-5 text-center'>
         <h2>Please login to view your cart</h2>
         <button
-          className="btn btn-primary mt-3"
-          onClick={() => router.push("/login")}
+          className='btn btn-primary mt-3'
+          onClick={() => router.push('/login')}
         >
           Login
         </button>
@@ -124,14 +135,14 @@ export default function OrderConfirmationPage() {
   }
 
   return (
-    <div className="container py-5">
-      <h1 className="mb-4 text-center">Confirm your order!</h1>
+    <div className='container py-5'>
+      <h1 className='mb-4 text-center'>Confirm your order!</h1>
 
       <h3>Order Summary:</h3>
       {cartItems.length === 0 ? (
-        <p>Your cart was empty.</p>
+        <p>Your cart is empty.</p>
       ) : (
-        <table className="table">
+        <table className='table'>
           <thead>
             <tr>
               <th>Item</th>
@@ -150,7 +161,7 @@ export default function OrderConfirmationPage() {
                 <td>Rs: {(price * quantity).toFixed(2)}</td>
                 <td>
                   <button
-                    className="btn btn-sm btn-danger"
+                    className='btn btn-sm btn-danger'
                     onClick={() => handleDeleteItem(menu_id)}
                   >
                     Delete
@@ -159,20 +170,20 @@ export default function OrderConfirmationPage() {
               </tr>
             ))}
             <tr>
-              <td colSpan={3} className="text-end fw-bold">
+              <td colSpan={3} className='text-end fw-bold'>
                 Total:
               </td>
-              <td className="fw-bold">Rs: {totalPrice.toFixed(2)}</td>
+              <td className='fw-bold'>Rs: {totalPrice.toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
       )}
 
-      <div className="d-flex justify-content-center gap-3 mt-4">
-        <button onClick={handleCancel} className="btn btn-secondary px-4">
+      <div className='d-flex justify-content-center gap-3 mt-4'>
+        <button onClick={handleCancel} className='btn btn-secondary px-4'>
           Cancel
         </button>
-        <button onClick={handleConfirm} className="btn btn-primary px-4">
+        <button onClick={handleConfirm} className='btn btn-primary px-4'>
           Confirm
         </button>
       </div>
