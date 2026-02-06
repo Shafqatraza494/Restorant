@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface CartItem {
   id: number;
@@ -15,25 +15,28 @@ interface CartItem {
 
 function Page() {
   const [menuItems, setMenuItems] = useState<CartItem[]>([]);
+  const [loadingId, setLoadingId] = useState<number | null>(null); // ✅ added
   const router = useRouter();
 
   async function handleCart(item: any) {
     try {
-      // 🔐 check login first
-      const authRes = await fetch("/api/auth/me", {
-        credentials: "include",
+      setLoadingId(item.id); // ✅ start loading
+
+      const authRes = await fetch('/api/auth/me', {
+        credentials: 'include',
       });
 
       if (!authRes.ok) {
-        toast.error("Please login first to add items to cart");
+        toast.error('Please login first to add items to cart');
+        setLoadingId(null);
         return;
       }
 
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        credentials: "include",
+      const res = await fetch('/api/cart', {
+        method: 'POST',
+        credentials: 'include',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(item),
       });
@@ -41,25 +44,27 @@ function Page() {
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error || "Failed to add to cart");
+        toast.error(data.error || 'Failed to add to cart');
+        setLoadingId(null);
         return;
       }
 
       toast.success(data.message);
-      window.dispatchEvent(new Event("cartUpdate"));
+      window.dispatchEvent(new Event('cartUpdate'));
     } catch (error: any) {
-      toast.error(error.message || "Error while adding to cart");
+      toast.error(error.message || 'Error while adding to cart');
+    } finally {
+      setLoadingId(null); // ✅ stop loading
     }
   }
 
   async function fetchData() {
     try {
-      const response = await fetch("/api/menu");
+      const response = await fetch('/api/menu');
       const result: any = await response.json();
       setMenuItems(result);
-      console.log(result);
     } catch (error) {
-      console.log("error fetching menu");
+      console.log('error fetching menu');
     }
   }
 
@@ -67,47 +72,47 @@ function Page() {
     fetchData();
   }, []);
 
-  // Create an array of menu items based on your menu data for easier handling
-
   return (
     <div>
-      {/* ... your existing header and nav here ... */}
-
-      {/* Menu Items */}
-      <div className="py-5">
-        <div className="container">
-          <div className="text-center wow fadeInUp" data-wow-delay="0.1s">
-            <h5 className="section-title ff-secondary text-center text-primary fw-normal">
+      <div className='py-5'>
+        <div className='container'>
+          <div className='text-center wow fadeInUp' data-wow-delay='0.1s'>
+            <h5 className='section-title ff-secondary text-center text-primary fw-normal'>
               Food Menu
             </h5>
-            <h1 className="mb-5">Most Popular Items</h1>
+            <h1 className='mb-5'>Most Popular Items</h1>
           </div>
-          <div className="row g-4">
+
+          <div className='row g-4'>
             {menuItems.map((item) => (
-              <div key={item.id} className="col-lg-6 d-flex align-items-center">
+              <div key={item.id} className='col-lg-6 d-flex align-items-center'>
                 <img
-                  className="flex-shrink-0 img-fluid rounded"
+                  className='flex-shrink-0 img-fluid rounded'
                   src={
                     item.image ||
-                    "https://img.freepik.com/free-photo/closeup-scarlet-macaw-from-side-view-scarlet-macaw-closeup-head_488145-3540.jpg?semt=ais_hybrid&w=740&q=80"
+                    'https://img.freepik.com/free-photo/closeup-scarlet-macaw-from-side-view-scarlet-macaw-closeup-head_488145-3540.jpg?semt=ais_hybrid&w=740&q=80'
                   }
                   alt={item.name}
-                  style={{ width: "80px" }}
+                  style={{ width: '80px' }}
                 />
-                <div className="w-100 d-flex flex-column text-start ps-4">
-                  <h5 className="d-flex justify-content-between border-bottom pb-2">
+
+                <div className='w-100 d-flex flex-column text-start ps-4'>
+                  <h5 className='d-flex justify-content-between border-bottom pb-2'>
                     <span>{item.name}</span>
-                    <span className="text-primary">Rs. {item.price}</span>
+                    <span className='text-primary'>Rs. {item.price}</span>
                   </h5>
-                  <small className="fst-italic">
+
+                  <small className='fst-italic'>
                     Ipsum ipsum clita erat amet dolor justo diam
                   </small>
 
                   <button
-                    className="btn btn-sm btn-primary mt-2"
+                    className='btn btn-sm btn-primary mt-2'
                     onClick={() => handleCart(item)}
+                    disabled={loadingId === item.id} // ✅ disable while loading
                   >
-                    Add to Cart
+                    {loadingId === item.id ? 'Adding...' : 'Add to Cart'}{' '}
+                    {/* ✅ */}
                   </button>
                 </div>
               </div>

@@ -70,7 +70,7 @@ export default function ProfilePage() {
           <div>
             <p className='font-semibold'>{order.item}</p>
             <p className='text-sm text-gray-600'>
-              Qty: {order.quantity} | Price: ${order.price}
+              Qty: {order.quantity} | Price: {order.price} PKR
             </p>
           </div>
           <span

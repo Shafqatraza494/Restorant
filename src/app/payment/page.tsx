@@ -56,8 +56,7 @@ export default function PaymentPage() {
   const taxRate = 0.1;
   const discount = 5;
 
-  const taxAmount = totalPrice * taxRate;
-  const finalTotal = Math.max(totalPrice + taxAmount - discount, 0);
+  const finalTotal = Math.max(totalPrice - discount, 0);
 
   const handleCOD = async () => {
     if (cartItems.length === 0) {
@@ -157,17 +156,12 @@ export default function PaymentPage() {
                   </td>
                   <td>Rs: {totalPrice.toFixed(2)}</td>
                 </tr>
-                <tr>
-                  <td colSpan={3} className='text-end fw-bold'>
-                    Tax (10%):
-                  </td>
-                  <td>Rs: {taxAmount.toFixed(2)}</td>
-                </tr>
+
                 <tr>
                   <td colSpan={3} className='text-end fw-bold'>
                     Discount:
                   </td>
-                  <td>-Rs: {discount.toFixed(2)}</td>
+                  <td>Rs: -{discount.toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td colSpan={3} className='text-end fw-bold fs-5'>

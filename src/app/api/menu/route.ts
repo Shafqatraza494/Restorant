@@ -58,7 +58,6 @@ export async function GET() {
     const [rows] = await connection.execute(
       'SELECT id, name, category, price , image FROM menu',
     );
-    console.log(rows);
 
     return NextResponse.json(rows, {
       headers: { 'Content-Type': 'application/json' },

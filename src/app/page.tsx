@@ -17,7 +17,6 @@ type CartItem = {
 };
 
 export default function Home() {
-  const [data] = useFetch('https://dummyjson.com/posts');
   const [booking, setBooking] = useState({
     name: '',
     email: '',
@@ -63,9 +62,13 @@ export default function Home() {
   }
 
   const [menuItems, setMenuItems] = useState<CartItem[]>([]);
+  const [loadingMenu, setLoadingMenu] = useState(false);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
 
   async function handleCart(item: any) {
     try {
+      setLoadingId(item.id); // 🔄 start loading for this item
+
       // 🔐 check login first
       const authRes = await fetch('/api/auth/me', {
         credentials: 'include',
@@ -90,7 +93,6 @@ export default function Home() {
       if (!res.ok) {
         toast.error(data.error || 'Failed to add to cart');
         console.log(data);
-
         return;
       }
 
@@ -98,17 +100,28 @@ export default function Home() {
       window.dispatchEvent(new Event('cartUpdate'));
     } catch (error: any) {
       toast.error(error.message || 'Error while adding to cart');
+    } finally {
+      setLoadingId(null); // ✅ stop loading
     }
   }
 
   async function fetchData() {
     try {
+      setLoadingMenu(true);
+
       const response = await fetch('/api/menu');
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch menu');
+      }
+
       const result: any = await response.json();
       setMenuItems(result);
-      console.log('ff\dsfSF', response);
+      console.log('ff\\dsfSF', response);
     } catch (error) {
       console.log('error fetching menu');
+    } finally {
+      setLoadingMenu(false);
     }
   }
 
@@ -355,8 +368,9 @@ export default function Home() {
                         <button
                           className='btn btn-sm btn-primary mt-2'
                           onClick={() => handleCart(item)}
+                          disabled={loadingId === item.id}
                         >
-                          Add to Cart
+                          {loadingId === item.id ? 'Adding...' : 'Add to Cart'}
                         </button>
                       </div>
                     </div>

@@ -64,7 +64,7 @@ export default function OrderConfirmationPage() {
       const resp = await fetch('/api/cart', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ menuId: menu_id }),
+        body: JSON.stringify({ menu_id }),
         credentials: 'include',
       });
 

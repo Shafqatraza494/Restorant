@@ -47,7 +47,7 @@ export async function GET() {
         status: 401,
       });
 
-    const [rows] = await connection.execute(
+    const [rows]: any = await connection.execute(
       'SELECT * FROM carts WHERE user_id = ?',
       [userId],
     );
