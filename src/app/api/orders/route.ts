@@ -97,15 +97,26 @@ export async function GET() {
       });
     }
 
-    // ✅ Decode JWT to get user_id
+    // ✅ Decode JWT
     const decoded: any = jwt.verify(token, JWT_SECRET);
     const user_id = decoded.id;
+    const role = decoded.role;
 
-    // 🔹 Fetch only current user's orders
-    const [rows] = await connection.execute(
-      'SELECT * FROM `orders` WHERE user_id = ? ORDER BY id DESC',
-      [user_id],
-    );
+    let rows;
+
+    // 👑 Admin → get all orders
+    if (role === 'admin') {
+      [rows] = await connection.execute(
+        'SELECT * FROM `orders` ORDER BY id DESC',
+      );
+    }
+    // 👤 Normal user → only their orders
+    else {
+      [rows] = await connection.execute(
+        'SELECT * FROM `orders` WHERE user_id = ? ORDER BY id DESC',
+        [user_id],
+      );
+    }
 
     return new Response(JSON.stringify(rows), {
       headers: { 'Content-Type': 'application/json' },
@@ -117,13 +128,13 @@ export async function GET() {
     });
   }
 }
+
 //////////////////////////////////////////////////////////////////////////////////////
 
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
     const { deleteId } = body;
-    console.log(deleteId);
 
     const sql = `DELETE FROM orders WHERE id = ?`;
     await connection.execute(sql, [deleteId]);

@@ -16,7 +16,6 @@ export async function GET() {
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    console.log('decoded', token);
 
     const decoded: any = jwt.verify(token, JWT_SECRET);
     const user_id = decoded.id;

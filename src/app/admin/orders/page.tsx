@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { ok } from "assert";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { json } from "stream/consumers";
+import { ok } from 'assert';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { json } from 'stream/consumers';
 
 interface Order {
   id: number;
@@ -14,6 +14,7 @@ interface Order {
   tax: number;
   subtotal: number;
   status: string;
+  user_id: number;
 }
 
 export default function OrdersPage() {
@@ -23,11 +24,11 @@ export default function OrdersPage() {
   // Function to update order status
   async function updateStatus(id: number, newStatus: string) {
     try {
-      const res = await fetch("/api/status", {
-        method: "PUT",
-        credentials: "include", // 🔑 important
+      const res = await fetch('/api/status', {
+        method: 'PUT',
+        credentials: 'include', // 🔑 important
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ id, newStatus }),
       });
@@ -35,12 +36,12 @@ export default function OrdersPage() {
       // 🔥 handle non-JSON / redirect safely
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(text || "Failed to update status");
+        throw new Error(text || 'Failed to update status');
       }
 
       const data = await res.json();
 
-      toast.success(data.message || "Updated Successfully");
+      toast.success(data.message || 'Updated Successfully');
 
       // update frontend state
       setStatus((prev) =>
@@ -49,7 +50,7 @@ export default function OrdersPage() {
         ),
       );
     } catch (error: any) {
-      toast.error(error.message || "Something went wrong");
+      toast.error(error.message || 'Something went wrong');
     }
   }
 
@@ -58,12 +59,13 @@ export default function OrdersPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("/api/orders");
+        const res = await fetch('/api/orders');
         const result = await res.json();
+        console.log(result);
 
         setOrders(result);
       } catch (err) {
-        toast.error("error.message");
+        toast.error('error.message');
       }
     }
 
@@ -73,13 +75,12 @@ export default function OrdersPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("/api/status");
+        const res = await fetch('/api/status');
         const result = await res.json();
-        console.log("ytr5gy5rtg5", result);
 
         setStatus(result);
       } catch (err) {
-        toast.error("error.message");
+        toast.error('error.message');
       }
     }
 
@@ -98,10 +99,10 @@ export default function OrdersPage() {
 
   async function confirmDelete() {
     try {
-      const response = await fetch("/api/orders", {
-        method: "DELETE",
+      const response = await fetch('/api/orders', {
+        method: 'DELETE',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ deleteId }),
       });
@@ -109,7 +110,7 @@ export default function OrdersPage() {
         setOrders((prev) => prev.filter((order) => order.id !== deleteId));
         setShowConfirm(false);
         setDeleteId(null);
-        toast.success("deleted success");
+        toast.success('deleted success');
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -126,16 +127,18 @@ export default function OrdersPage() {
       <h1>Orders Management</h1>
 
       <table
-        style={{ width: "100%", borderCollapse: "collapse", marginTop: 20 }}
+        style={{ width: '100%', borderCollapse: 'collapse', marginTop: 20 }}
       >
         <thead>
           <tr>
             <th style={cellStyle}>ID</th>
-            <th style={cellStyle}>Customer</th>
+            <th style={cellStyle}>User ID</th>
+
+            <th style={cellStyle}>Item</th>
             <th style={cellStyle}>Price</th>
             <th style={cellStyle}>Quantity</th>
             <th style={cellStyle}>status</th>
-            <th style={cellStyle}>Tax</th>
+
             <th style={cellStyle}>SubTotal</th>
             <th style={cellStyle}>Actions</th>
           </tr>
@@ -144,6 +147,7 @@ export default function OrdersPage() {
           {orders.map((order) => (
             <tr key={order.id}>
               <td style={cellStyle}>{order.id}</td>
+              <td style={cellStyle}>{order.user_id}</td>
               <td style={cellStyle}>{order.item}</td>
               <td style={cellStyle}>{order.price}</td>
               <td style={cellStyle}>{order.quantity}</td>
@@ -154,32 +158,27 @@ export default function OrdersPage() {
                   })?.status
                 }
               </td>
-              <td style={cellStyle}>{order.tax}%</td>
-              <td style={cellStyle}>
-                {(
-                  Number(order.subtotal) -
-                  Number(order.subtotal) * (Number(order.tax) / 100)
-                ).toFixed(2)}
-              </td>
+
+              <td style={cellStyle}>{Number(order.subtotal).toFixed(2)}</td>
 
               <td style={cellStyle}>
                 {/* Show buttons based on current status */}
                 {status.find((s) => {
                   return s.order_id == order.id;
-                })?.status === "pending" && (
+                })?.status === 'pending' && (
                   <button
                     style={btnReadyStyle}
-                    onClick={() => updateStatus(order.id, "Ready")}
+                    onClick={() => updateStatus(order.id, 'Ready')}
                   >
                     Ready
                   </button>
                 )}
                 {status.find((s) => {
                   return s.order_id == order.id;
-                })?.status === "Ready" && (
+                })?.status === 'Ready' && (
                   <button
                     style={btnDeliveredStyle}
-                    onClick={() => updateStatus(order.id, "Delivered")}
+                    onClick={() => updateStatus(order.id, 'Delivered')}
                   >
                     Delivered
                   </button>
@@ -207,8 +206,8 @@ export default function OrdersPage() {
             <div
               style={{
                 marginTop: 20,
-                display: "flex",
-                justifyContent: "flex-end",
+                display: 'flex',
+                justifyContent: 'flex-end',
                 gap: 10,
               }}
             >
@@ -227,65 +226,65 @@ export default function OrdersPage() {
 }
 
 const cellStyle: React.CSSProperties = {
-  border: "1px solid #ccc",
+  border: '1px solid #ccc',
   padding: 10,
 };
 
 const btnReadyStyle: React.CSSProperties = {
-  padding: "6px 12px",
+  padding: '6px 12px',
   marginRight: 8,
-  backgroundColor: "#ff9900",
-  border: "none",
+  backgroundColor: '#ff9900',
+  border: 'none',
   borderRadius: 4,
-  color: "white",
-  cursor: "pointer",
+  color: 'white',
+  cursor: 'pointer',
 };
 
 const btnDeliveredStyle: React.CSSProperties = {
-  padding: "6px 12px",
+  padding: '6px 12px',
   marginRight: 8,
-  backgroundColor: "#28a745",
-  border: "none",
+  backgroundColor: '#28a745',
+  border: 'none',
   borderRadius: 4,
-  color: "white",
-  cursor: "pointer",
+  color: 'white',
+  cursor: 'pointer',
 };
 
 const btnDeleteStyle: React.CSSProperties = {
-  padding: "6px 12px",
-  backgroundColor: "#dc3545",
-  border: "none",
+  padding: '6px 12px',
+  backgroundColor: '#dc3545',
+  border: 'none',
   borderRadius: 4,
-  color: "white",
-  cursor: "pointer",
+  color: 'white',
+  cursor: 'pointer',
 };
 
 const overlayStyle: React.CSSProperties = {
-  position: "fixed",
+  position: 'fixed',
   top: 0,
   left: 0,
   right: 0,
   bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.5)",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
 };
 
 const modalStyle: React.CSSProperties = {
-  backgroundColor: "white",
+  backgroundColor: 'white',
   padding: 20,
   borderRadius: 8,
   maxWidth: 400,
-  width: "90%",
-  boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+  width: '90%',
+  boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
 };
 
 const btnCancelStyle: React.CSSProperties = {
-  padding: "6px 12px",
-  backgroundColor: "#6c757d",
-  border: "none",
+  padding: '6px 12px',
+  backgroundColor: '#6c757d',
+  border: 'none',
   borderRadius: 4,
-  color: "white",
-  cursor: "pointer",
+  color: 'white',
+  cursor: 'pointer',
 };

@@ -1,55 +1,52 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function AddMenuItem() {
   const router = useRouter();
 
-  const [name, setName] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
-  const [price, setPrice] = useState<string>("");
+  const [name, setName] = useState<string>('');
+  const [category, setCategory] = useState<string>('');
+  const [price, setPrice] = useState<string>('');
   const [error, setError] = useState<string>();
   const [image, setImage] = useState<File | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!image) {
-      return alert("plz put image");
+      return alert('plz put image');
     }
-    setError("");
+    setError('');
 
     if (!name || !category || !price) {
-      setError("all field required");
+      setError('all field required');
       return;
     }
 
-    // yahan bad me API call lag jaye gi
-    console.log({ name, category, price });
-
     try {
       const formData = new FormData();
-      formData.append("name", name);
-      formData.append("category", category);
-      formData.append("price", price.toString());
-      formData.append("image", image);
-      const response = await fetch("/api/menu", {
-        method: "POST",
+      formData.append('name', name);
+      formData.append('category', category);
+      formData.append('price', price.toString());
+      formData.append('image', image);
+      const response = await fetch('/api/menu', {
+        method: 'POST',
         body: formData,
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Something went wrong");
+        setError(data.error || 'Something went wrong');
 
         return;
       }
     } catch (err: any) {
-      setError(err.message || "Failed");
+      setError(err.message || 'Failed');
     }
 
-    router.push("/admin/menu"); // back to menu list
+    router.push('/admin/menu'); // back to menu list
   }
 
   return (
@@ -60,13 +57,13 @@ export default function AddMenuItem() {
         onSubmit={handleSubmit}
         style={{
           marginTop: 20,
-          display: "flex",
-          flexDirection: "column",
+          display: 'flex',
+          flexDirection: 'column',
           gap: 12,
         }}
       >
         <input
-          placeholder="Item Name"
+          placeholder='Item Name'
           value={name}
           onChange={(e) => setName(e.target.value)}
           style={inputStyle}
@@ -74,7 +71,7 @@ export default function AddMenuItem() {
         />
 
         <input
-          placeholder="Category"
+          placeholder='Category'
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           style={inputStyle}
@@ -82,8 +79,8 @@ export default function AddMenuItem() {
         />
 
         <input
-          placeholder="Price"
-          type="number"
+          placeholder='Price'
+          type='number'
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           style={inputStyle}
@@ -92,14 +89,14 @@ export default function AddMenuItem() {
 
         <input
           onChange={(e) => setImage(e.target.files?.[0] || null)}
-          placeholder="Image"
-          type="file"
-          accept="image/*"
+          placeholder='Image'
+          type='file'
+          accept='image/*'
           style={inputStyle}
           required
         />
 
-        <button type="submit" style={btnStyle}>
+        <button type='submit' style={btnStyle}>
           Save
         </button>
       </form>
@@ -110,14 +107,14 @@ export default function AddMenuItem() {
 const inputStyle: React.CSSProperties = {
   padding: 10,
   borderRadius: 6,
-  border: "3px solid #cccccc",
+  border: '3px solid #cccccc',
 };
 
 const btnStyle: React.CSSProperties = {
-  padding: "10px 16px",
-  background: "oklch(0.769 0.188 70.08)",
-  color: "#fff",
+  padding: '10px 16px',
+  background: 'oklch(0.769 0.188 70.08)',
+  color: '#fff',
   borderRadius: 6,
-  border: "none",
-  cursor: "pointer",
+  border: 'none',
+  cursor: 'pointer',
 };

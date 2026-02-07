@@ -14,7 +14,6 @@ interface MenuRequestBody {
 
 export async function POST(request: NextRequest) {
   try {
-    // ✅ FormData read karo
     const formData = await request.formData();
 
     const name = formData.get('name') as string;
@@ -29,7 +28,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ✅ Image save
     const bytes = await image.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const fileName = `${Date.now()}-${image.name}`;

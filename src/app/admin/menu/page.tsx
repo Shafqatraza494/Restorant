@@ -6,7 +6,6 @@ import { toast } from "sonner";
 
 export default function MenuPage() {
   const [data, setData] = useState<any[]>([]);
-  console.log("mm", data);
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);

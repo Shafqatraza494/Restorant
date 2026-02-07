@@ -53,7 +53,6 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log(body);
     const { adminId, name, address, phone, email } = body;
 
     const sql =

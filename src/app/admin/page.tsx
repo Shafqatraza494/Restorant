@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { json } from "stream/consumers";
-import { toast } from "sonner";
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { json } from 'stream/consumers';
+import { toast } from 'sonner';
 
 const cardStyle: React.CSSProperties = {
   flex: 1,
-  padding: "20px",
-  borderRadius: "12px",
-  backgroundColor: "#0f172b",
-  color: "white",
-  boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
-  cursor: "pointer",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  alignItems: "center",
-  transition: "transform 0.2s ease",
+  padding: '20px',
+  borderRadius: '12px',
+  backgroundColor: '#0f172b',
+  color: 'white',
+  boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+  cursor: 'pointer',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  transition: 'transform 0.2s ease',
   minWidth: 150,
 };
 
 const cardHoverStyle: React.CSSProperties = {
-  transform: "scale(1.05)",
+  transform: 'scale(1.05)',
 };
 
 type CardProps = {
@@ -46,7 +46,7 @@ function AdminCard({ href, title, count, icon }: CardProps) {
   const [hover, setHover] = React.useState(false);
 
   return (
-    <Link href={href} style={{ textDecoration: "none", flex: 1 }}>
+    <Link href={href} style={{ textDecoration: 'none', flex: 1 }}>
       <div
         style={{
           ...cardStyle,
@@ -56,7 +56,7 @@ function AdminCard({ href, title, count, icon }: CardProps) {
         onMouseLeave={() => setHover(false)}
       >
         <div style={{ fontSize: 40, marginBottom: 10 }}>{icon}</div>
-        <div style={{ fontSize: 24, fontWeight: "bold" }}>{count}</div>
+        <div style={{ fontSize: 24, fontWeight: 'bold' }}>{count}</div>
         <div style={{ fontSize: 16, opacity: 0.8 }}>{title}</div>
       </div>
     </Link>
@@ -72,7 +72,7 @@ export default function AdminHome() {
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   async function orderStatus() {
     try {
-      const res = await fetch("/api/orders");
+      const res = await fetch('/api/orders');
       const data = await res.json();
       setOrder(data.length);
       setAllOrders(data);
@@ -96,7 +96,7 @@ export default function AdminHome() {
 
   async function menufunction() {
     try {
-      const res = await fetch("/api/menu");
+      const res = await fetch('/api/menu');
       const data = await res.json();
       setMenu(data.length);
     } catch (error: any) {
@@ -105,12 +105,12 @@ export default function AdminHome() {
   }
   async function usersfunction() {
     try {
-      const res = await fetch("/api/users", {
-        credentials: "include",
+      const res = await fetch('/api/users', {
+        credentials: 'include',
       });
 
       if (!res.ok) {
-        throw new Error("Failed to fetch users");
+        throw new Error('Failed to fetch users');
       }
 
       const data = await res.json();
@@ -130,7 +130,7 @@ export default function AdminHome() {
     menuItems: menu,
     orders: order,
     users: user,
-    sales: "PKR " + totalSales,
+    sales: 'PKR ' + totalSales,
   };
 
   return (
@@ -140,35 +140,35 @@ export default function AdminHome() {
 
       <div
         style={{
-          display: "flex",
+          display: 'flex',
           gap: 20,
           marginTop: 30,
-          flexWrap: "wrap",
+          flexWrap: 'wrap',
         }}
       >
         <AdminCard
-          href="/admin/menu"
-          title="Menu Items"
+          href='/admin/menu'
+          title='Menu Items'
           count={stats.menuItems}
-          icon={<i className="fa fa-utensils" />}
+          icon={<i className='fa fa-utensils' />}
         />
         <AdminCard
-          href="/admin/orders"
-          title="Orders"
+          href='/admin/orders'
+          title='Orders'
           count={stats.orders}
-          icon={<i className="fa fa-shopping-cart" />}
+          icon={<i className='fa fa-shopping-cart' />}
         />
         <AdminCard
-          href="/admin/users"
-          title="Users"
+          href='/admin/users'
+          title='Users'
           count={stats.users}
-          icon={<i className="fa fa-users" />}
+          icon={<i className='fa fa-users' />}
         />
         <AdminCard
-          href="/admin/settings"
-          title="Total Sales"
+          href='/admin/settings'
+          title='Total Sales'
           count={stats.sales}
-          icon={<i className="fa fa-rupee-sign" />}
+          icon={<i className='fa fa-rupee-sign' />}
         />
       </div>
     </div>

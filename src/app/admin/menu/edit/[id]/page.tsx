@@ -74,7 +74,6 @@ export default function EditMenuItem() {
   }, []);
 
   useEffect(() => {
-    console.log(data);
     setName(data.name);
     setCategory(data.category);
     setPrice(data.price);
