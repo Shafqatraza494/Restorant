@@ -37,7 +37,7 @@ export async function GET() {
     console.log(orders);
 
     // 3️⃣ Filter orders by status
-    const completedOrders = orders.filter((o: any) => o.status === 'completed');
+    const completedOrders = orders.filter((o: any) => o.status === 'Delivered');
     const pendingOrders = orders.filter((o: any) => o.status === 'pending');
     const readyOrders = orders.filter((o: any) => o.status === 'Ready'); // ✅ new
 
