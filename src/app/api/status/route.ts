@@ -25,11 +25,6 @@ export async function POST(request: NextRequest) {
 
     await connection.execute(insertStatusSql, [order_id, status]);
 
-    // 2️⃣ Update current status in orders table
-    const updateOrderSql = 'UPDATE orders SET status = ? WHERE id = ?';
-
-    await connection.execute(updateOrderSql, [status, order_id]);
-
     return new Response(
       JSON.stringify({ message: 'Order status updated successfully' }),
       { headers: { 'Content-Type': 'application/json' } },
@@ -49,19 +44,39 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { id, newStatus } = body;
 
-    const sql = 'UPDATE status SET `status`=? WHERE `order_id`=?';
-    await connection.execute(sql, [newStatus, id]);
+    if (!id || !newStatus) {
+      return new Response(
+        JSON.stringify({ error: 'id and newStatus are required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
 
-    return new Response(JSON.stringify({ message: 'Edit save Succesful' }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // 1️⃣ Update status history table
+    const updateStatusSql =
+      'UPDATE status SET `status` = ? WHERE `order_id` = ?';
+
+    await connection.execute(updateStatusSql, [newStatus, id]);
+
+    // 2️⃣ Update current status in orders table
+    const updateOrderSql = 'UPDATE orders SET `status` = ? WHERE `id` = ?';
+
+    await connection.execute(updateOrderSql, [newStatus, id]);
+
+    return new Response(
+      JSON.stringify({ message: 'Status updated successfully' }),
+      { headers: { 'Content-Type': 'application/json' } },
+    );
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: 'Edit not save Succesful' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: error.message || 'Edit not saved' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
   }
 }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 export async function GET() {

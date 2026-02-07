@@ -136,19 +136,34 @@ export async function DELETE(request: NextRequest) {
     const body = await request.json();
     const { deleteId } = body;
 
-    const sql = `DELETE FROM orders WHERE id = ?`;
-    await connection.execute(sql, [deleteId]);
+    if (!deleteId) {
+      return new Response(JSON.stringify({ error: 'deleteId is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 1️⃣ Delete status history first (FK-safe)
+    const deleteStatusSql = 'DELETE FROM status WHERE order_id = ?';
+
+    await connection.execute(deleteStatusSql, [deleteId]);
+
+    // 2️⃣ Delete order
+    const deleteOrderSql = 'DELETE FROM orders WHERE id = ?';
+
+    await connection.execute(deleteOrderSql, [deleteId]);
 
     return new Response(
-      JSON.stringify({ message: 'Item Deleted Successfully' }),
+      JSON.stringify({ message: 'Order deleted successfully' }),
+      { headers: { 'Content-Type': 'application/json' } },
+    );
+  } catch (error: any) {
+    return new Response(
+      JSON.stringify({ error: error.message || 'Failed to delete order' }),
       {
+        status: 500,
         headers: { 'Content-Type': 'application/json' },
       },
     );
-  } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to Delete Item' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
   }
 }
