@@ -19,6 +19,7 @@ export async function GET() {
 
     const decoded: any = jwt.verify(token, JWT_SECRET);
     const user_id = decoded.id;
+    console.log(user_id);
 
     // 1️⃣ Get user details
     const [userRows]: any = await connection.execute(
@@ -33,10 +34,12 @@ export async function GET() {
       [user_id],
     );
 
+    console.log(orders);
+
     // 3️⃣ Filter orders by status
     const completedOrders = orders.filter((o: any) => o.status === 'completed');
     const pendingOrders = orders.filter((o: any) => o.status === 'pending');
-    const readyOrders = orders.filter((o: any) => o.status === 'ready'); // ✅ new
+    const readyOrders = orders.filter((o: any) => o.status === 'Ready'); // ✅ new
 
     return new Response(
       JSON.stringify({ user, completedOrders, pendingOrders, readyOrders }),
